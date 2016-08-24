@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Liwen</title>
+    <description>分享创业历程所学所想与rails心得，供自己持续学习的动力。
+</description>
+    <link>http://hitchhiker.ma/</link>
+    <atom:link href="http://hitchhiker.ma/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Wed, 24 Aug 2016 11:54:24 +0800</pubDate>
+    <lastBuildDate>Wed, 24 Aug 2016 11:54:24 +0800</lastBuildDate>
+    <generator>Jekyll v3.2.1</generator>
+    
+      <item>
+        <title>我为什么要写博客？</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;为什么我要写博客？我没想清楚这个问题之前，我一直让自己处于没有博客的状态，而我自己也很清楚，如果没搞清楚这个问题，我就算强制要求自己，而不过坚持一段时间然后告诉自己：早就让你别写博客了，你好，都写成这样，有什么意思？没意思的事情还是少点做，少点给自己积累负能量。&lt;/p&gt;
+
+&lt;p&gt;最近公司进入一种强制学习的状态，要求每个员工必须分析，每周轮流一个人分享你认为不错的东西。就如雷军所说，大部分时间都花在人力资源里。同样的，公司也进入到这个阶段，作为创业公司，精兵强将才是王道。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;为什么我要写博客&lt;/h1&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;积累更多的知识 &amp;amp;&amp;amp; 将事情讲清楚&lt;/h2&gt;
+&lt;p&gt;诚如&lt;a href=&quot;http://v.youku.com/v_show/id_XMTY2MTcyNTAyMA==.html?from=y1.7-1.2&quot;&gt;罗辑思维-180集 你如何听懂我说的话&lt;/a&gt;所说，文字表达有文字表达的逻辑，说话有说话的罗辑，不是将文字通过声音传达出来就是说话。如果将事情讲清楚，尤其是三分钟内打动对象，这需要练习。同样的，通过文字表达让读者听懂，也是需要锻炼的，这是我写博客原因之一。&lt;/p&gt;
+
+&lt;p&gt;每段时间都会发生很多事情，很多事情我促使我去思考，寻找答案，即使无解也好，引发思考总会有收获；每段时间都会有学习，不管学习的是什么内容，关于技术的、关于对世界的认知、关于方法论、关于毅力、关于思维方式等等，同样的内容看一遍和看N遍收获是不一样的，经历了不同事情后学习同样的内容的收获和共鸣当然更不一样，而这也是我为什么要记录下来的原因，积累更多的知识，不断积累，补充更多新血液。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;提供持续学习的动力&lt;/h2&gt;
+&lt;p&gt;学习，是永恒的话题，我们都知道。可是作为90后，我看到很多是急于求成，选择容易出效果的事情来做，而学习，尤其是长期坚持学习，是比较难做到。这不是我针对某一群体，这是一个大概率事件，包括我自己在内，和前辈相比，缺少的更多的是学习以及对学习的渴望。最可怕的是那些“成功者、大人物”，比你起点高，比你聪明，比你优秀，却还拼命挤时间在学习。&lt;/p&gt;
+
+&lt;p&gt;学习，持续学习，要坚持学习下去。作为创业公司，持续发展的核心在于学习能力强。让自己每段时间更新博客，让自己持续学习，这是对自己的承诺。&lt;/p&gt;
+&lt;h2 id=&quot;section-4&quot;&gt;找到志同道合的人&lt;/h2&gt;
+&lt;p&gt;博客是一个传达我的思想的好工具，通过博客，你可以跨时空限制，直接和我对话，通过文字，与我情绪互动，了解我的为人，我就是我！&lt;/p&gt;
+
+&lt;p&gt;寻找志同道合的人，不仅是公司强大的方式，也是作为一个人强大的方式。三人行必有我师！&lt;/p&gt;
+
+&lt;h1 id=&quot;section-5&quot;&gt;分享&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;http://v.youku.com/v_show/id_XMTY2MTcyNTAyMA==.html?from=y1.7-1.2&quot;&gt;罗辑思维-180集 你如何听懂我说的话&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/19743861&quot;&gt;《为什么你要写博客？》&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 24 Aug 2016 00:00:00 +0800</pubDate>
+        <link>http://hitchhiker.ma/thinking/2016/08/24/Why-should-I-write-blog.html</link>
+        <guid isPermaLink="true">http://hitchhiker.ma/thinking/2016/08/24/Why-should-I-write-blog.html</guid>
+        
+        
+        <category>thinking</category>
+        
+      </item>
+    
+  </channel>
+</rss>

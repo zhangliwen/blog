@@ -1,0 +1,18 @@
+---
+layout: page
+title: Liwen`s Blog
+subtitle: 创业时小伙伴一份奋斗的所学所想；</br>在rails成长历程的学习笔记；</br>供自己持续学习的动力。
+sitemap:
+  priority: 0.9
+---
+
+<ul class="list-posts">
+    {% for post in site.posts %}
+        <li class="post-teaser">
+            <a href="{{ post.url | prepend: site.baseurl }}">
+                <span class="post-teaser__title">{{ post.title }}</span>
+                <span class="post-teaser__date">{{ post.date | date: "%d %B %Y" }}</span>
+            </a>
+        </li>
+    {% endfor %}
+</ul>
