@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> 在Rails项目里面使用七牛作文Assets文件分发，CDN分发 — Rails项目capistrano过程中，压缩后的Assets作为静态文件上传到七牛，共享CDN加速 &raquo;  Liwen</title>
+<meta name="description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta name="keywords" content="">
+<link rel="canonical" href="http://hitchhiker.ma/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html">
+        
+
+
+
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="在Rails项目里面使用七牛作文Assets文件分发，CDN分发" />
+<meta name="twitter:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+" />
+<meta name="twitter:image" content="http://hitchhiker.ma" />
+
+<!-- Google plus -->
+<meta name="author" content="">
+<link rel="author" href="">
+
+<!-- Open Graph -->
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Rails项目里面使用七牛作文Assets文件分发，CDN分发">
+<meta property="og:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta property="og:url" content="http://hitchhiker.ma/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html">
+<meta property="og:site_name" content="Liwen">
+
+        <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/css/main.css">
+
+  <link rel="stylesheet" href="/assets/vendor/highlight/styles/solarized_dark.css">
+
+<link rel="stylesheet" href="/assets/vendor/font-awesome/css/font-awesome.css">
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <header class="header">
+    <div class="navigation">
+        <a href="/" class="logo">Liwen</a>
+
+        <ul class="menu">
+            <li class="menu__entry"><a href="/about">About</a></li>
+            <li class="menu__entry"><a href="/">Blog</a></li>
+        </ul>
+    </div>
+
+    <ul class="social-links">
+        
+            <a href="https://github.com/zhangliwen" class="social-links__entry" target="_blank">
+                <i class="fa fa-github"></i>
+            </a>
+        
+
+        
+    </ul>
+</header>
+
+            <h1 class="page-title post-title">
+    <div class="page-title__text post-title__text">在Rails项目里面使用七牛作文Assets文件分发，CDN分发</div>
+    <div class="page-title__subtitle post-title__subtitle">Rails项目capistrano过程中，压缩后的Assets作为静态文件上传到七牛，共享CDN加速</div>
+</h1>
+
+<div class="content">
+    <h1 id="section">为什么使用七牛云存储</h1>
+
+<p>为什么会选择七牛，国内云存储比较出名的有：七牛，又拍云，以及阿里的OSS。其中用过七牛和又拍云，至于OSS，听说那时候不支持图片处理，虽然服务器使用阿里的，但还是直接PASS。一开始是使用又拍云的，在图片处理、SDK开发包、CDN加速以及价格上都挺满意的，唯一一点就是不稳定，经常莫名其妙的某些规格的图片就访问不了，而这时候（在当时）客服的qq状态变成手机在线的时候，据说是连客服都去抢修了。最后决定改版，从又拍云勇敢撤离，选择七牛。</p>
+
+<p>在图片处理、SDK开发包、CDN加速在七牛上会表现的更加淋漓尽致，最主要的是稳定，现在发现撤离又拍云是正确的选择，最少在静态文件上不用再花时间了。</p>
+
+<h1 id="carrierwave-">让七牛结合在 CarrierWave 里面使用</h1>
+
+<p>如果你想在 CarrierWave 里面使用七牛作为存储介质，那么你需要用:</p>
+
+<p><a href="https://github.com/huobazi/carrierwave-qiniu">https://github.com/huobazi/carrierwave-qiniu</a></p>
+
+<p>Gemfile</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">gem</span> <span class="s2">"carrierwave"</span>
+<span class="n">gem</span> <span class="s2">"qiniu"</span>
+<span class="n">gem</span> <span class="s2">"carrierwave-qiniu"</span>
+</code></pre>
+</div>
+<p>只需要简单的配置就能很好的将他们结合起来:</p>
+
+<p>config/initializes/carrierwave.rb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="no">CarrierWave</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">storage</span>             <span class="o">=</span> <span class="ss">:qiniu</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">qiniu_access_key</span>    <span class="o">=</span> <span class="no">ENV</span><span class="p">[</span><span class="s2">"qiniu_access_key"</span><span class="p">]</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">qiniu_secret_key</span>    <span class="o">=</span> <span class="no">ENV</span><span class="p">[</span><span class="s2">"qiniu_secret_key"</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>app/uploaders/image_uploader.rb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ImageUploader</span> <span class="o">&lt;</span> <span class="no">CarrierWave</span><span class="o">::</span><span class="no">Uploader</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">storage</span> <span class="ss">:qiniu</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">qiniu_bucket</span> <span class="o">=</span> <span class="s2">"空间名"</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">qiniu_bucket_domain</span> <span class="o">=</span> <span class="s1">'空间域名'</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">qiniu_protocal</span> <span class="o">=</span> <span class="s1">'https'</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">qiniu_can_overwrite</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="p">.</span><span class="nf">.</span><span class="p">.</span>
+<span class="nf">end</span>
+</code></pre>
+</div>
+
+<p>细节配置信息github都有，这里就不再细说了。如何使用图片功能可以参考<a href="http://huacnlee.com/blog/rails-app-image-store-with-carrierwave-upyun/#use-upyun-image-space">《在 Rails 项目里面使用又拍云用于存储上传图片》</a>，在代码层这一块，七牛和云拍云是完全一样的，只有一点区别就是：相对又拍云需要先定义好图片规格250x250，七牛甚至连规格都不需要定义，可以用代码来表示<code class="highlighter-rouge">url/?imageView2/2/w/250/h/250/q/95</code>来表示<code class="highlighter-rouge">url!250x250</code></p>
+
+<h1 id="assets">使用七牛来部署你的Assets</h1>
+<p>使用又拍云的小伙伴们完全可以参照<a href="http://huacnlee.com/blog/rails-app-image-store-with-carrierwave-upyun/#cdn-asset-files">《在 Rails 项目里面使用又拍云用于存储上传图片》</a>来配置，本人亲自使用，没有问题，太棒了！</p>
+
+<ul>
+  <li><code class="highlighter-rouge">config/environments/production.rb</code> - 将 config.action_controller.asset_host = 七牛空间域名</li>
+  <li>在七牛的官网下载qrsync的上传工具</li>
+  <li>创建lib/tasks/assets/cdn.rake文件:</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'ftp_sync'</span>
+<span class="n">namespace</span> <span class="ss">:assets</span> <span class="k">do</span>
+  <span class="n">desc</span> <span class="s1">'sync assets to cdns'</span>
+  <span class="n">task</span> <span class="ss">:cdn</span> <span class="o">=&gt;</span> <span class="ss">:environment</span> <span class="k">do</span> 
+
+    <span class="c1"># 主要为了生成cdn_conf.json, 可以考虑template来生成</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/cdn_conf.json"</span><span class="p">,</span> <span class="s2">"w+"</span><span class="p">)</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="s2">"{ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="n">conf</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\"</span><span class="s2">src</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="si">#{</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/public/assets/</span><span class="se">\"</span><span class="s2">,</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="n">conf</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\"</span><span class="s2">dest</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="s2">qiniu:access_key=</span><span class="si">#{</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'qiniu_access_key'</span><span class="p">]</span> <span class="si">}</span><span class="s2">&amp;secret_key=</span><span class="si">#{</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'qiniu_secret_key'</span><span class="p">]</span> <span class="si">}</span><span class="s2">&amp;bucket=空间名&amp;key_prefix=assets/</span><span class="se">\"</span><span class="s2">,</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="n">conf</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\"</span><span class="s2">deletable</span><span class="se">\"</span><span class="s2">:    0,</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="n">conf</span> <span class="o">+=</span> <span class="s2">"</span><span class="se">\"</span><span class="s2">debug_level</span><span class="se">\"</span><span class="s2">:  1</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="n">conf</span> <span class="o">+=</span> <span class="s2">" }"</span>
+    <span class="n">f</span><span class="p">.</span><span class="nf">write</span> <span class="n">conf</span>
+    <span class="n">f</span><span class="p">.</span><span class="nf">close</span>
+
+    <span class="nb">system</span><span class="p">(</span><span class="s2">"/root/qiniu_tool/qrsync </span><span class="si">#{</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/cdn_conf.json"</span><span class="p">)</span> <span class="c1"># 注意qrsync路径</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>config/deploy.rb - 在 Capistrano 的部署过程中，加入 rake assets:cdn</li>
+</ul>
+
+<p>PS：存储Assets文件，要选择文件空间；当你在 rake assets:precomplie 编译出 Assets 文件以后，就可以执行 rake assets:cdn 将预编译好的 Assets 文件同步到七牛里面了。</p>
+
+<h1 id="httpscdn">使用HTTPS的CDN加速</h1>
+
+<p>七牛的存储内容已经融合了CDN加速了，但是在HTTP的CDN，所以如果你不是HTTPS的话，请忽略这一节内容。</p>
+
+<p>如果你有幸开启了HTTPS，千万别忘记了申请泛域名的HTTPS，因为你要留有其中两个给七牛作为HTTPS的自定义域名，一个图片空间，一个Assets空间，这样算下来，泛域名的HTTPS比较合算。七牛配置比较简单，这里不讲解，不懂得可以提出工单。</p>
+
+<p>配置完之后，每个自定义加速域名都会有CNAME，在域名解析中添加一条CNAME，记录值填写七牛给你的CNAME，然后项目里的静态文件的url就可以是自定义的域名了。</p>
+
+<p>想要看看你的CDN评分，通过<a href="http://www.mmtrix.com/evaluate/applist">【性能魔方】</a>这个来评测，免费的，超好用。</p>
+
+<h1 id="section-1">引用</h1>
+<p><a href="http://huacnlee.com/blog/rails-app-image-store-with-carrierwave-upyun">《在 Rails 项目里面使用又拍云用于存储上传图片》</a></p>
+
+</div>
+
+<div class="about">
+    <div class="about__devider">*****</div>
+    <div class="about__text">
+        Written by <strong>  Zhang Liwen </strong>
+        on <strong>24 August 2016</strong>
+    </div>
+</div>
+
+
+        </div>
+
+        <script src="/assets/vendor/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+    </body>
+</html>

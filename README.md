@@ -8,3 +8,5 @@
 
 * Thinking
     * [我为什么要写博客？](http://zhangliwen.site/thinking/2016/08/24/Why-should-I-write-blog.html)
+* Rails
+    * [在Rails项目里面使用七牛作文Assets文件分发，CDN分发](http://zhangliwen.site/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html)

@@ -5,3 +5,4 @@ source 'https://ruby.taobao.org'
 gem 'rails', '4.0.9'
 
 gem 'github-pages', group: :jekyll_plugins
+

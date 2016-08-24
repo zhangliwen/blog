@@ -6,9 +6,116 @@
 </description>
     <link>http://hitchhiker.ma/</link>
     <atom:link href="http://hitchhiker.ma/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 24 Aug 2016 14:18:59 +0800</pubDate>
-    <lastBuildDate>Wed, 24 Aug 2016 14:18:59 +0800</lastBuildDate>
+    <pubDate>Wed, 24 Aug 2016 18:24:56 +0800</pubDate>
+    <lastBuildDate>Wed, 24 Aug 2016 18:24:56 +0800</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>在Rails项目里面使用七牛作文Assets文件分发，CDN分发</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;为什么使用七牛云存储&lt;/h1&gt;
+
+&lt;p&gt;为什么会选择七牛，国内云存储比较出名的有：七牛，又拍云，以及阿里的OSS。其中用过七牛和又拍云，至于OSS，听说那时候不支持图片处理，虽然服务器使用阿里的，但还是直接PASS。一开始是使用又拍云的，在图片处理、SDK开发包、CDN加速以及价格上都挺满意的，唯一一点就是不稳定，经常莫名其妙的某些规格的图片就访问不了，而这时候（在当时）客服的qq状态变成手机在线的时候，据说是连客服都去抢修了。最后决定改版，从又拍云勇敢撤离，选择七牛。&lt;/p&gt;
+
+&lt;p&gt;在图片处理、SDK开发包、CDN加速在七牛上会表现的更加淋漓尽致，最主要的是稳定，现在发现撤离又拍云是正确的选择，最少在静态文件上不用再花时间了。&lt;/p&gt;
+
+&lt;h1 id=&quot;carrierwave-&quot;&gt;让七牛结合在 CarrierWave 里面使用&lt;/h1&gt;
+
+&lt;p&gt;如果你想在 CarrierWave 里面使用七牛作为存储介质，那么你需要用:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/huobazi/carrierwave-qiniu&quot;&gt;https://github.com/huobazi/carrierwave-qiniu&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Gemfile&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;carrierwave&quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;qiniu&quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;carrierwave-qiniu&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;只需要简单的配置就能很好的将他们结合起来:&lt;/p&gt;
+
+&lt;p&gt;config/initializes/carrierwave.rb&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;no&quot;&gt;CarrierWave&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;configure&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;storage&lt;/span&gt;             &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:qiniu&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;qiniu_access_key&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ENV&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;qiniu_access_key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;qiniu_secret_key&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ENV&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;qiniu_secret_key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;app/uploaders/image_uploader.rb&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ImageUploader&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;CarrierWave&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Uploader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Base&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;storage&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:qiniu&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;qiniu_bucket&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;空间名&quot;&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;qiniu_bucket_domain&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;空间域名&#39;&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;qiniu_protocal&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;https&#39;&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;qiniu_can_overwrite&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;细节配置信息github都有，这里就不再细说了。如何使用图片功能可以参考&lt;a href=&quot;http://huacnlee.com/blog/rails-app-image-store-with-carrierwave-upyun/#use-upyun-image-space&quot;&gt;《在 Rails 项目里面使用又拍云用于存储上传图片》&lt;/a&gt;，在代码层这一块，七牛和云拍云是完全一样的，只有一点区别就是：相对又拍云需要先定义好图片规格250x250，七牛甚至连规格都不需要定义，可以用代码来表示&lt;code class=&quot;highlighter-rouge&quot;&gt;url/?imageView2/2/w/250/h/250/q/95&lt;/code&gt;来表示&lt;code class=&quot;highlighter-rouge&quot;&gt;url!250x250&lt;/code&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;assets&quot;&gt;使用七牛来部署你的Assets&lt;/h1&gt;
+&lt;p&gt;使用又拍云的小伙伴们完全可以参照&lt;a href=&quot;http://huacnlee.com/blog/rails-app-image-store-with-carrierwave-upyun/#cdn-asset-files&quot;&gt;《在 Rails 项目里面使用又拍云用于存储上传图片》&lt;/a&gt;来配置，本人亲自使用，没有问题，太棒了！&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;config/environments/production.rb&lt;/code&gt; - 将 config.action_controller.asset_host = 七牛空间域名&lt;/li&gt;
+  &lt;li&gt;在七牛的官网下载qrsync的上传工具&lt;/li&gt;
+  &lt;li&gt;创建lib/tasks/assets/cdn.rake文件:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;ftp_sync&#39;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:assets&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;desc&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;sync assets to cdns&#39;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;task&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:cdn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;:environment&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; 
+
+    &lt;span class=&quot;c1&quot;&gt;# 主要为了生成cdn_conf.json, 可以考虑template来生成&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;File&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Rails&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/cdn_conf.json&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;w+&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;{ &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Rails&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/public/assets/&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;dest&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;qiniu:access_key=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ENV&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#39;qiniu_access_key&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;amp;secret_key=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;ENV&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#39;qiniu_secret_key&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;amp;bucket=空间名&amp;amp;key_prefix=assets/&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;deletable&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:    0,&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;debug_level&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:  1&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot; }&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;write&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;conf&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;close&lt;/span&gt;
+
+    &lt;span class=&quot;nb&quot;&gt;system&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/root/qiniu_tool/qrsync &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;#{&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;Rails&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;root&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/cdn_conf.json&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# 注意qrsync路径&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;config/deploy.rb - 在 Capistrano 的部署过程中，加入 rake assets:cdn&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;PS：存储Assets文件，要选择文件空间；当你在 rake assets:precomplie 编译出 Assets 文件以后，就可以执行 rake assets:cdn 将预编译好的 Assets 文件同步到七牛里面了。&lt;/p&gt;
+
+&lt;h1 id=&quot;httpscdn&quot;&gt;使用HTTPS的CDN加速&lt;/h1&gt;
+
+&lt;p&gt;七牛的存储内容已经融合了CDN加速了，但是在HTTP的CDN，所以如果你不是HTTPS的话，请忽略这一节内容。&lt;/p&gt;
+
+&lt;p&gt;如果你有幸开启了HTTPS，千万别忘记了申请泛域名的HTTPS，因为你要留有其中两个给七牛作为HTTPS的自定义域名，一个图片空间，一个Assets空间，这样算下来，泛域名的HTTPS比较合算。七牛配置比较简单，这里不讲解，不懂得可以提出工单。&lt;/p&gt;
+
+&lt;p&gt;配置完之后，每个自定义加速域名都会有CNAME，在域名解析中添加一条CNAME，记录值填写七牛给你的CNAME，然后项目里的静态文件的url就可以是自定义的域名了。&lt;/p&gt;
+
+&lt;p&gt;想要看看你的CDN评分，通过&lt;a href=&quot;http://www.mmtrix.com/evaluate/applist&quot;&gt;【性能魔方】&lt;/a&gt;这个来评测，免费的，超好用。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;引用&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;http://huacnlee.com/blog/rails-app-image-store-with-carrierwave-upyun&quot;&gt;《在 Rails 项目里面使用又拍云用于存储上传图片》&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 24 Aug 2016 00:00:00 +0800</pubDate>
+        <link>http://hitchhiker.ma/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html</link>
+        <guid isPermaLink="true">http://hitchhiker.ma/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html</guid>
+        
+        
+        <category>rails</category>
+        
+      </item>
     
       <item>
         <title>我为什么要写博客？</title>
