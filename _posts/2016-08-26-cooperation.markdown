@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 如何协作？
+title: 创业协作中遇到的问题
 subtitle: "cooperation"
 categories: [thinking]
 ---
