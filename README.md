@@ -11,3 +11,4 @@
     * [创业协作中遇到的问题](http://zhangliwen.site/thinking/2016/08/26/cooperation.html)
 * Rails
     * [在Rails项目里面使用七牛作文Assets文件分发，CDN分发](http://zhangliwen.site/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html)
+    * [在七牛服务器上压缩文件](http://zhangliwen.site/rails/2016/08/27/qiniu_online_zip.html)

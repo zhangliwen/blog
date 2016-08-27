@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> 在七牛服务器上压缩文件 — qiniu online-zip &raquo;  Liwen</title>
+<meta name="description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta name="keywords" content="">
+<link rel="canonical" href="http://hitchhiker.ma/rails/2016/08/27/qiniu_online_zip.html">
+        
+
+
+
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="在七牛服务器上压缩文件" />
+<meta name="twitter:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+" />
+<meta name="twitter:image" content="http://hitchhiker.ma" />
+
+<!-- Google plus -->
+<meta name="author" content="">
+<link rel="author" href="">
+
+<!-- Open Graph -->
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在七牛服务器上压缩文件">
+<meta property="og:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta property="og:url" content="http://hitchhiker.ma/rails/2016/08/27/qiniu_online_zip.html">
+<meta property="og:site_name" content="Liwen">
+
+        <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/css/main.css">
+
+  <link rel="stylesheet" href="/assets/vendor/highlight/styles/solarized_dark.css">
+
+<link rel="stylesheet" href="/assets/vendor/font-awesome/css/font-awesome.css">
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <header class="header">
+    <div class="navigation">
+        <a href="/" class="logo">Liwen</a>
+
+        <ul class="menu">
+            <li class="menu__entry"><a href="/about">About</a></li>
+            <li class="menu__entry"><a href="/">Blog</a></li>
+        </ul>
+    </div>
+
+    <ul class="social-links">
+        
+            <a href="https://github.com/zhangliwen" class="social-links__entry" target="_blank">
+                <i class="fa fa-github"></i>
+            </a>
+        
+
+        
+    </ul>
+</header>
+
+            <h1 class="page-title post-title">
+    <div class="page-title__text post-title__text">在七牛服务器上压缩文件</div>
+    <div class="page-title__subtitle post-title__subtitle">qiniu online-zip</div>
+</h1>
+
+<div class="content">
+    <h1 id="section">需求</h1>
+
+<p>在类似一个ERP系统中，需要导出批量订单数据以及每个订单有若干加工图片，订单数据生成Excel。如果图片是存储在本地服务器，我想要实现这个挺简单的，使用<a href="https://github.com/rubyzip/rubyzip">rubyzip</a>就可以轻松解决，这里就直接跳过。我们来谈谈，如果图片是放在云储存中，如何实现zip压缩？</p>
+
+<h1 id="zip">ZIP的方案</h1>
+
+<ul>
+  <li>方案一：<a href="https://github.com/rubyzip/rubyzip">rubyzip</a> 是不支持非本地图片的压缩，也许你会想到，将需要压缩的图片全部下载到本地，而后再进行压缩，可以写一个worker完成整个业务。</li>
+</ul>
+
+<p>缺点很明显，需要下载全部图片后，才能开始zip，增加等待时间，并且需要一定的存储空间和内存开销。</p>
+
+<ul>
+  <li>方案二：使用<a href="https://github.com/fringd/zipline">zipline</a>，压缩的文件路径可以是url。这是通过open-uri获取到文件流，然后再进行压缩，同样也支持延迟执行。当然，要像unicorn/rainbows或者其他支持streaming的服务器，才能使用。</li>
+</ul>
+
+<p>这个就是方案一的改良版，有效的解决了方案一突出的问题。然而，如果有没有更优的方案？有没有可能不需要使用服务器的CPU就能完成压缩？答案是肯定的，七牛有提供这样的功能，又拍云和OSS有没有，就未可知了。</p>
+
+<ul>
+  <li>方案三：七牛提供了<a href="http://developer.qiniu.com/docs/v6/api/reference/fop/mkzip.html">多文件压缩(mkzip)</a>功能，提供了批量文件的压缩存储功能，可以将若干七牛空间的资源通过七牛后端压缩后储存在七牛空间内，需要下载时，还融合CDN加速进行下载。是不是觉得这个方案太棒了？</li>
+</ul>
+
+<h1 id="section-1">代码(方案一跳过)</h1>
+
+<p>方案二：</p>
+
+<ul>
+  <li>controller.rb</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="nb">require</span> <span class="s1">'reset_open_uri'</span>  <span class="c1"># 作用下列会介绍，关于图片小于10KB而造成的错误</span>
+
+  <span class="n">zipfile_name</span> <span class="o">=</span> <span class="s2">"target.zip"</span>
+  <span class="n">zipfile_url</span> <span class="o">=</span> <span class="s2">"tmp/zip/</span><span class="si">#{</span> <span class="n">zipfile_name</span> <span class="si">}</span><span class="s2">"</span>
+  <span class="no">Zip</span><span class="p">.</span><span class="nf">unicode_names</span> <span class="o">=</span> <span class="kp">true</span>  <span class="c1"># 解决解压后中文文件名乱码问题</span>
+  <span class="n">excel_path</span> <span class="o">=</span> <span class="s2">"tmp/zip/excel.xls"</span>  <span class="c1"># 可以是实时生成</span>
+
+  <span class="no">Zip</span><span class="o">::</span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="n">zipfile_url</span><span class="p">,</span> <span class="no">Zip</span><span class="o">::</span><span class="no">File</span><span class="o">::</span><span class="no">CREATE</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">zipfile</span><span class="o">|</span>
+    <span class="n">zipfile</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="s2">"excel.xls"</span><span class="p">,</span> <span class="n">excel_path</span><span class="p">)</span>
+
+    <span class="n">zipfile</span><span class="p">.</span><span class="nf">mkdir</span><span class="p">(</span><span class="s1">'图片'</span><span class="p">)</span> <span class="c1"># 在压缩文件中，生成叫【图片】的文件夹</span>
+    <span class="n">image_datas</span> <span class="o">=</span> <span class="p">[{</span> <span class="ss">name: </span><span class="s1">'图片1'</span><span class="p">,</span> <span class="ss">url: </span><span class="s1">'http://www.qiniu.com/image1.png'</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">name: </span><span class="s1">'图片2'</span><span class="p">,</span> <span class="ss">url: </span><span class="s1">'http://www.qiniu.com/image2.png'</span> <span class="p">}]</span>
+    <span class="n">zipfile_add_img</span><span class="p">(</span><span class="n">zipfile</span><span class="p">,</span> <span class="s1">'图片'</span><span class="p">,</span> <span class="n">image_datas</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">send_data</span> <span class="nb">open</span><span class="p">(</span><span class="n">zipfile_url</span><span class="p">).</span><span class="nf">read</span><span class="p">,</span> <span class="ss">filename: </span><span class="n">zipfile_name</span><span class="p">,</span> <span class="ss">type: </span><span class="s2">"application/zip"</span><span class="p">,</span> <span class="ss">disposition: </span><span class="s1">'inline'</span><span class="p">,</span> <span class="ss">stream: </span><span class="s1">'true'</span>
+
+  <span class="k">def</span> <span class="nf">zipfile_add_img</span> <span class="n">zipfile</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">urls</span>
+    <span class="k">return</span> <span class="k">if</span> <span class="n">urls</span><span class="p">.</span><span class="nf">blank?</span>
+    <span class="n">urls</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">img_data</span><span class="o">|</span>
+      <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">img_data</span><span class="p">[</span><span class="ss">:url</span><span class="p">])</span>
+      <span class="n">zipfile</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="n">zipfile</span><span class="p">.</span><span class="nf">get_entry</span><span class="p">(</span><span class="n">file_name</span><span class="p">).</span><span class="nf">name</span> <span class="si">}#{</span> <span class="n">img_data</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span> <span class="si">}</span><span class="s2">.png"</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>lib/reset_open_uri.rb</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="c1"># 如果图片小于10KB，file的类型就不再是Tempfile，而是StringIO，而StringIO是不能打包的，强制将10KB降低到0KB</span>
+    <span class="nb">require</span> <span class="s1">'open-uri'</span>
+    <span class="c1"># Don't allow downloaded files to be created as StringIO. Force a tempfile to be created.</span>
+    <span class="no">OpenURI</span><span class="o">::</span><span class="no">Buffer</span><span class="p">.</span><span class="nf">send</span> <span class="ss">:remove_const</span><span class="p">,</span> <span class="s1">'StringMax'</span> <span class="k">if</span> <span class="no">OpenURI</span><span class="o">::</span><span class="no">Buffer</span><span class="p">.</span><span class="nf">const_defined?</span><span class="p">(</span><span class="s1">'StringMax'</span><span class="p">)</span>
+    <span class="no">OpenURI</span><span class="o">::</span><span class="no">Buffer</span><span class="p">.</span><span class="nf">const_set</span> <span class="s1">'StringMax'</span><span class="p">,</span> <span class="mi">0</span>
+</code></pre>
+</div>
+
+<p>方案三：
+先将实时生成的excel.xle上传到指定空间，然后在压缩。注意：压缩的资源必须在同一个空间内才行，否则出错。
+mkzip文档请参照：<a href="http://developer.qiniu.com/docs/v6/api/reference/fop/mkzip.html">mkzip</a></p>
+
+<ul>
+  <li>生成一个model，作为压缩记录：rails g model mkzip_record</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>    <span class="n">create_table</span> <span class="ss">:mkzip_records</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">integer</span> <span class="ss">:user_id</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:title</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:persistent_id</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:finish_time</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:url</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:desc</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>controller.rb</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>    <span class="n">zipfile_name</span> <span class="o">=</span> <span class="s2">"target.zip"</span>
+    <span class="n">record</span> <span class="o">=</span> <span class="no">MkzipRecord</span><span class="p">.</span><span class="nf">search</span><span class="p">(</span><span class="ss">url_cont: </span><span class="n">zipfile_name</span><span class="p">).</span><span class="nf">result</span><span class="p">.</span><span class="nf">first</span>  <span class="c1"># 如果已存在，就无需再生成</span>
+    <span class="k">if</span> <span class="n">record</span><span class="p">.</span><span class="nf">nil?</span>
+      <span class="n">excel_path</span> <span class="o">=</span> <span class="s2">"tmp/zip/excel.xls"</span>  <span class="c1"># 可以是实时生成</span>
+      <span class="n">code</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">res_headers</span> <span class="o">=</span> <span class="no">Qiniu</span><span class="o">::</span><span class="no">Storage</span><span class="p">.</span><span class="nf">upload_with_token_2</span><span class="p">(</span> <span class="n">get_qiniu_uptoken</span><span class="p">(</span><span class="s2">"excel.xls"</span><span class="p">),</span> <span class="n">excel_path</span><span class="p">,</span> <span class="s2">"excel.xls"</span><span class="p">)</span>  <span class="c1">#上传到七牛</span>
+
+      <span class="n">image_datas</span> <span class="o">=</span> <span class="p">[{</span> <span class="ss">name: </span><span class="s1">'图片1'</span><span class="p">,</span> <span class="ss">url: </span><span class="s1">'http://www.qiniu.com/image1.png'</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">name: </span><span class="s1">'图片2'</span><span class="p">,</span> <span class="ss">url: </span><span class="s1">'http://www.qiniu.com/image2.png'</span> <span class="p">}]</span>
+      <span class="n">image_datas</span> <span class="o">&lt;&lt;</span> <span class="p">{</span> <span class="ss">name: </span><span class="s1">'excel'</span><span class="p">,</span> <span class="ss">url: </span><span class="s2">"</span><span class="si">#{</span> <span class="vg">$cloud_storage</span> <span class="si">}#{</span> <span class="n">result</span><span class="p">[</span><span class="s1">'key'</span><span class="p">]</span> <span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+      <span class="n">record</span> <span class="o">=</span> <span class="no">MkzipRecord</span><span class="p">.</span><span class="nf">create_mkzip</span><span class="p">(</span><span class="n">image_datas</span><span class="p">,</span> <span class="n">zipfile_name</span><span class="p">,</span> <span class="s2">"加工单"</span><span class="p">,</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+    <span class="k">end</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>models/mkzip_record.rb</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>
+    <span class="c1"># tag_bucket: 压缩完的zip存储的七牛空间名; image_bucket: 图片和excel所在的空间名</span>
+    <span class="c1"># 七牛的pipeline不可缺少，先申请</span>
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">create_mkzip</span> <span class="n">urls</span><span class="p">,</span> <span class="n">zip_name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">user_id</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">tag_bucket</span> <span class="o">=</span> <span class="s1">'zipfile'</span>
+      <span class="n">image_bucket</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">,</span> <span class="n">url_encodes</span> <span class="o">=</span> <span class="s1">'sdimage'</span><span class="p">,</span> <span class="s1">'pipeline'</span><span class="p">,</span> <span class="s1">'pipeline'</span><span class="p">,</span> <span class="s1">''</span>
+      <span class="n">notify_url</span> <span class="o">=</span> <span class="s2">"</span><span class="si">#{</span> <span class="vg">$domain</span> <span class="si">}</span><span class="s2">payments/qiniu_mkzip_notify"</span>
+
+      <span class="n">urls</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">u</span><span class="o">|</span> 
+        <span class="n">url_encodes</span> <span class="o">+=</span> <span class="s1">'/url/'</span> <span class="o">+</span> <span class="no">Qiniu</span><span class="o">::</span><span class="no">Utils</span><span class="p">.</span><span class="nf">urlsafe_base64_encode</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="ss">:url</span><span class="p">])</span>
+        <span class="n">url_encodes</span> <span class="o">+=</span> <span class="s1">'/alias/'</span> <span class="o">+</span> <span class="no">Qiniu</span><span class="o">::</span><span class="no">Utils</span><span class="p">.</span><span class="nf">urlsafe_base64_encode</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="n">u</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span> <span class="si">}</span><span class="s2">.</span><span class="si">#{</span> <span class="n">u</span><span class="p">[</span><span class="ss">:url</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="s1">'.'</span><span class="p">).</span><span class="nf">last</span> <span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">unless</span> <span class="n">u</span><span class="p">[</span><span class="ss">:name</span><span class="p">].</span><span class="nf">blank?</span>
+      <span class="k">end</span>
+
+      <span class="n">fops</span> <span class="o">=</span> <span class="s1">'mkzip/2'</span> <span class="o">+</span> <span class="n">url_encodes</span>
+      <span class="n">saveas_key</span> <span class="o">=</span> <span class="no">Qiniu</span><span class="o">::</span><span class="no">Utils</span><span class="p">.</span><span class="nf">urlsafe_base64_encode</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="n">tag_bucket</span> <span class="si">}</span><span class="s2">:</span><span class="si">#{</span> <span class="n">zip_name</span> <span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+      <span class="n">fops</span> <span class="o">=</span> <span class="n">fops</span><span class="o">+</span><span class="s1">'|saveas/'</span><span class="o">+</span> <span class="n">saveas_key</span>
+      <span class="n">pfops</span>  <span class="o">=</span> <span class="no">Qiniu</span><span class="o">::</span><span class="no">Fop</span><span class="o">::</span><span class="no">Persistance</span><span class="o">::</span><span class="no">PfopPolicy</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span> <span class="n">image_bucket</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">fops</span><span class="p">,</span> <span class="n">notify_url</span><span class="p">)</span>
+      <span class="n">pfops</span><span class="p">.</span><span class="nf">pipeline</span> <span class="o">=</span> <span class="n">pipeline</span>
+      <span class="n">code</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">res_headers</span> <span class="o">=</span> <span class="no">Qiniu</span><span class="o">::</span><span class="no">Fop</span><span class="o">::</span><span class="no">Persistance</span><span class="p">.</span><span class="nf">pfop</span><span class="p">(</span><span class="n">pfops</span><span class="p">)</span>
+      <span class="k">return</span> <span class="k">unless</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">200</span>
+
+      <span class="n">create</span><span class="p">(</span><span class="ss">user_id: </span><span class="n">user_id</span><span class="p">,</span> <span class="ss">title: </span><span class="n">title</span><span class="p">,</span> <span class="ss">persistent_id: </span><span class="n">result</span><span class="p">[</span><span class="s1">'persistentId'</span><span class="p">],</span> <span class="ss">url: </span><span class="s2">"</span><span class="si">#{</span> <span class="vg">$zip_storage</span> <span class="si">}#{</span> <span class="n">zip_name</span> <span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">end</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>initializers/qiniu_sdk.rb</li>
+</ul>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>    <span class="c1">#!/usr/bin/env ruby</span>
+    <span class="nb">require</span> <span class="s1">'qiniu'</span>
+    <span class="no">Qiniu</span><span class="p">.</span><span class="nf">establish_connection!</span> <span class="ss">:access_key</span> <span class="o">=&gt;</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'qiniu_access_key'</span><span class="p">],</span> <span class="ss">:secret_key</span> <span class="o">=&gt;</span> <span class="no">ENV</span><span class="p">[</span><span class="s1">'qiniu_secret_key'</span><span class="p">]</span> 
+    
+</code></pre>
+</div>
+<p>然后就大功告成，唯一一个缺点就是：zip的中文名乱码</p>
+
+</div>
+
+<div class="about">
+    <div class="about__devider">*****</div>
+    <div class="about__text">
+        Written by <strong>  Zhang Liwen </strong>
+        on <strong>27 August 2016</strong>
+    </div>
+</div>
+
+
+        </div>
+
+        <script src="/assets/vendor/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+    </body>
+</html>

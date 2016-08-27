@@ -3,6 +3,36 @@
   
     
     <url>
+      <loc>http://hitchhiker.ma/rails/2016/08/27/qiniu_online_zip.html/</loc>
+      
+        <lastmod>2016-08-27T00:00:00+08:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.7</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://hitchhiker.ma/thinking/2016/08/26/cooperation.html/</loc>
+      
+        <lastmod>2016-08-26T00:00:00+08:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.7</priority>
+      
+    </url>
+    
+  
+    
+    <url>
       <loc>http://hitchhiker.ma/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html/</loc>
       
         <lastmod>2016-08-24T00:00:00+08:00</lastmod>
@@ -38,7 +68,7 @@
     <url>
       <loc>http://hitchhiker.ma/about/</loc>
       
-        <lastmod>2016-08-24T18:27:14+08:00</lastmod>
+        <lastmod>2016-08-27T18:24:15+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -55,7 +85,7 @@
     <url>
       <loc>http://hitchhiker.ma/</loc>
       
-        <lastmod>2016-08-24T18:27:14+08:00</lastmod>
+        <lastmod>2016-08-27T18:24:15+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -72,7 +102,7 @@
     <url>
       <loc>http://hitchhiker.ma/categories/rails/</loc>
       
-        <lastmod>2016-08-24T18:27:14+08:00</lastmod>
+        <lastmod>2016-08-27T18:24:15+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -91,7 +121,7 @@
     <url>
       <loc>http://hitchhiker.ma/categories/thinking/</loc>
       
-        <lastmod>2016-08-24T18:27:14+08:00</lastmod>
+        <lastmod>2016-08-27T18:24:15+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
