@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> Rails如何升级到4.2 — 第一次做翻译，come on！ &raquo;  Liwen</title>
+<meta name="description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta name="keywords" content="">
+<link rel="canonical" href="http://hitchhiker.ma/rails/2016/09/13/how_to_upgrade_to_rails_4_2.html">
+        
+
+
+
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Rails如何升级到4.2" />
+<meta name="twitter:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+" />
+<meta name="twitter:image" content="http://hitchhiker.ma" />
+
+<!-- Google plus -->
+<meta name="author" content="">
+<link rel="author" href="">
+
+<!-- Open Graph -->
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rails如何升级到4.2">
+<meta property="og:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta property="og:url" content="http://hitchhiker.ma/rails/2016/09/13/how_to_upgrade_to_rails_4_2.html">
+<meta property="og:site_name" content="Liwen">
+
+        <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/css/main.css">
+
+  <link rel="stylesheet" href="/assets/vendor/highlight/styles/solarized_dark.css">
+
+<link rel="stylesheet" href="/assets/vendor/font-awesome/css/font-awesome.css">
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <header class="header">
+    <div class="navigation">
+        <a href="/" class="logo">Liwen</a>
+
+        <ul class="menu">
+            <li class="menu__entry"><a href="/about">About</a></li>
+            <li class="menu__entry"><a href="/">Blog</a></li>
+        </ul>
+    </div>
+
+    <ul class="social-links">
+        
+            <a href="https://github.com/zhangliwen" class="social-links__entry" target="_blank">
+                <i class="fa fa-github"></i>
+            </a>
+        
+
+        
+    </ul>
+</header>
+
+            <h1 class="page-title post-title">
+    <div class="page-title__text post-title__text">Rails如何升级到4.2</div>
+    <div class="page-title__subtitle post-title__subtitle">第一次做翻译，come on！</div>
+</h1>
+
+<div class="content">
+    <p>本文档是 <a href="http://www.justinweiss.com/articles/how-to-upgrade-to-rails-4-dot-2/">How to Upgrade to Rails 4.2</a>中文翻译版， 阅读这个文档可以帮助你了解 <em>升级Rails</em> 的技巧。</p>
+
+<h1 id="section">前言</h1>
+
+<p>升级Rails项目很简单: <em>bundle update rails</em> .</p>
+
+<p><strong>但是你有多少种Rails类型的项目？</strong>一种还是4.0，甚至3.2版本的，而你不想将来拽着它们发狂吧？</p>
+
+<p>无论你面临的是一个快速升级或者痛苦的方案，这些步骤将帮助你尽可能顺利的将项目升级到4.2版本。在升级过程中，你将学到如何充分利用4.2版本的新功能。</p>
+
+<h1 id="section-1">阅读升级指南</h1>
+
+<p>当你升级你的Rails项目时，应该时刻阅读<a href="http://guides.rubyonrails.org/upgrading_ruby_on_rails.html">Rails Upgrade Guide<em>升级指南</em></a>.</p>
+
+<p><em>升级指南</em>将引导你完成最主要的版本修改。<strong>它会告诉你如何修改你的项目来解决你遇到的最大的问题。</strong>（例如，<a href="http://guides.rubyonrails.org/upgrading_ruby_on_rails.html#mutator-methods-called-on-relation">这个变化</a>在4.1将会给我们造成数小时的痛苦如果我们没有阅读它。）</p>
+
+<p>但更多的是，<em>升级指南</em>将解释为什么你应该做出这些修改。而这很重要，因为它可以帮助你理解哪些建议你应该关注以及哪些可以忽略。</p>
+
+<p>如果你想更深入理解Rails4.2的变化，请阅读<a href="http://guides.rubyonrails.org/4_2_release_notes.html">release notes</a>。它们将介绍你所有Rails4.2你将用到的酷炫的新功能。毫无例外的话，它会激励你去完成升级。</p>
+
+<h1 id="section-2">升级步骤</h1>
+
+<p><strong>当你准备升级Rails时，先升级小版本。别跳跃大版本.</strong></p>
+
+<p>所以如果你想从4.1.6升级到4.2，先从4.1.6到4.1.9，然后再从4.1.9到4.2。如果你从4.0.12开始，先从4.0.12升级到4.0.13，然后再从4.0.13到4.1.9，最后从4.1.9到4.2。这可能看起来工作量更大，但长远来看它会节省你的时间。</p>
+
+<p>为什么？</p>
+
+<p>Rails每发布一个小版本都会有最好的警告信息。</p>
+
+<p>不要低估了这些警告信息的作用。如果你使用上诉步骤来升级，它们会告诉你什么会被破坏以及如何阻止它。如果你升级版本跳的太快，你的项目仅仅是简单的坏了，你也不知道为什么。</p>
+
+<p>最后，如果Rails小版本升级（像4.0.9到4.0.13）在一个<em>Test</em>坏了，它通过也会在大版本升级时坏掉。但是这些问题在变化少的情况下更容易调试和修复。</p>
+
+<p>所以，要做的事情有：</p>
+
+<ol>
+  <li>将Rails项目升级到Rails所在大版本的任何一个更新的小版本。</li>
+  <li>升级每一个gems，避免一直处于 <em>bundle update</em> 中。</li>
+  <li>修复<em>Test</em>, 根据需要提交。</li>
+  <li>修复警告信息，根据需要提交。</li>
+  <li>升级下一个大版本，重复上面的步骤。</li>
+</ol>
+
+<h1 id="test">从你的Test中学习</h1>
+
+<p><strong>当你升级Rails，你的测试将在第一个告诉你哪里有问题。</strong>它们应该在第一时间被执行，并在第一时间完成修复。甚至在你完成大部分修复之前，不要试图启动Rails项目。</p>
+
+<h1 id="gems">升级你的Gems</h1>
+
+<p>当你的测试出错，它看起来不是代码写错，而通常意味着你某些gems需要升级了。</p>
+
+<p><strong>Rails升级最糟糕的时刻就是升级Gem。</strong>由于这么多你的项目是变化的，这很难告诉你Rails升级破坏了什么东西，或者Gem的升级破坏了什么东西，又或者你自身破坏了什么东西。</p>
+
+<p>但由于一些gems在Rails自依赖太严重，这是你必须要做的。所以如果一个<strong>sass</strong>出错了，升级<strong>sass-rails</strong> Gem。然后希望这不会让事情更糟糕。</p>
+
+<h1 id="section-3">做笔记</h1>
+
+<p>如果你只有一个特别粗糙的升级方案，你将会一个一个去实验。在这过程中，你有可能做一个调试，调整一些代码，或者修改一些测试。</p>
+
+<p>当你这样做之后，你可能忘记了你做过的操作。一些事情你做了大部分但并不完全的尝试；你还要准备去看一些<em>Test</em>；并且还有其他需要地方的代码需要修改。建议和同事分享你正在升级你们的项目。</p>
+
+<p>因此，做一些笔记，任何事情都可以记录下来，你做过的尝试，以及更改过的文件。</p>
+
+<p>假设你在升级那些必须升级的Gems时，你有了关于“为什么会出错“以及“他们是否是正确的”想法。出现了一些貌似很奇怪的结果，然后你会更细心的检查。</p>
+
+<p>你不想在你做出了修改，回滚到原样后，意识到这是正确的解决方案，而你不记得你做了什么。<strong>所以记下它.</strong></p>
+
+<h1 id="section-4">其他资源</h1>
+
+<p>在评论里，<a href="http://www.justinweiss.com/blog/2015/01/27/how-to-upgrade-to-rails-4-dot-2/#comment-1819239786">Miha Rekar</a> 提出了 <a href="http://railsdiff.org/diff/v4.1.9/v4.2.0/">RailsDiff</a>,向你展示了不同版本生成的不同Rails项目之间的差异。</p>
+
+<p><a href="http://www.justinweiss.com/blog/2015/01/27/how-to-upgrade-to-rails-4-dot-2/#comment-1821457820">Daniel Kehoe</a>也写了一篇指南<a href="http://railsapps.github.io/updating-rails.html">comprehensive guide</a>,通过RVM 和 RVM gemsets 升级Ruby 和Rails。</p>
+
+<h1 id="section-5">可能的升级体验</h1>
+<p>一些Rails 升级是顺利的，所有东西都能正常运行；一些升级则非常有挑战性，需要几天或者几周的开销。这要取决于你的项目，你的依赖，以及Rails指定需要修改的变化。<strong>但如果你按照这些步骤，你将有最好的升级体验。</strong></p>
+
+<p>你已经是Rails 4.2了吗？你是如何升级你的项目的？你只需要升级一堆Gems，还是仍然在追寻最后一个出错的<em>Test</em>？</p>
+
+<p>原文推荐： <a href="http://www.justinweiss.com/articles/how-to-upgrade-to-rails-4-dot-2/">How to Upgrade to Rails 4.2</a></p>
+
+</div>
+
+<div class="about">
+    <div class="about__devider">*****</div>
+    <div class="about__text">
+        Written by <strong>  Zhang Liwen </strong>
+        on <strong>13 September 2016</strong>
+    </div>
+</div>
+
+
+        </div>
+
+        <script src="/assets/vendor/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+    </body>
+</html>

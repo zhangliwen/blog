@@ -12,3 +12,4 @@
 * Rails
     * [在Rails项目里面使用七牛作文Assets文件分发，CDN分发](http://zhangliwen.site/rails/2016/08/24/how-use-qiniu-storage-and_cdn.html)
     * [在七牛服务器上压缩文件](http://zhangliwen.site/rails/2016/08/27/qiniu_online_zip.html)
+    * [Rails升级到4.2(译文)](http://zhangliwen.site/rails/2016/09/13/how_to_upgrade_to_rails_4_2.html)
