@@ -6,9 +6,106 @@
 </description>
     <link>http://hitchhiker.ma/</link>
     <atom:link href="http://hitchhiker.ma/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 14 Sep 2016 16:55:13 +0800</pubDate>
-    <lastBuildDate>Wed, 14 Sep 2016 16:55:13 +0800</lastBuildDate>
+    <pubDate>Thu, 13 Oct 2016 17:04:00 +0800</pubDate>
+    <lastBuildDate>Thu, 13 Oct 2016 17:04:00 +0800</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>Rails瘦身</title>
+        <description>&lt;h1 id=&quot;section&quot;&gt;背景&lt;/h1&gt;
+
+&lt;p&gt;新的项目启动时，Ruby on Rails是一个不错的选择。Rails很大程度上提高开发效率，你不需要重复发明轮子，不太需要关注安全性，在项目初期，你甚至不需要关注性能方面的问题。而事实上，Rails框架相对于其他一些轻灵（如Sinatra）的框架来说还是太重了。为什么会这样？这里有两个最常见的原因：依赖以及占用高资源。Rails瘦身中可以让你使用其他组件（如Sequel代替默认的ActiveRecord）和提高系统安全性。&lt;/p&gt;
+
+&lt;h1 id=&quot;rails-&quot;&gt;Rails 模块化&lt;/h1&gt;
+
+&lt;p&gt;这是最简单的方式来选择你需要用到的Rails模块。在初始化模块时：&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# in config/application.rb&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;retuire&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;rails/all&#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;换成：&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# in config/application.rb&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;active_record/railtie&#39;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;action_controller/railtie&#39;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;action_mailer/railtie&#39;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;active_model/railtie&#39;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;require&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;sprockets/railtie&#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;当你看到这些模块时，你可以移除如active_record如果你使用其他数据库。&lt;/p&gt;
+
+&lt;h1 id=&quot;section-1&quot;&gt;中间件&lt;/h1&gt;
+
+&lt;p&gt;Rails默认开启一些中间件。Rails4.1有：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Rack::Sendfile
+ActionDispatch::Static
+Rack::Lock
+Rack::Runtime
+Rack::MethodOverride
+ActionDispatch::RequestId
+#&amp;lt;ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x007ff931376400&amp;gt;
+Rails::Rack::Logger
+ActionDispatch::ShowExceptions
+ActionDispatch::DebugExceptions
+ActionDispatch::RemoteIp
+ActionDispatch::Reloader
+ActionDispatch::Callbacks
+ActionDispatch::Cookies
+ActionDispatch::Session::CookieStore
+ActionDispatch::Flash
+ActionDispatch::ParamsParser
+Rack::ConditionalGet
+Rack::ETag
+YouApp::Application.routes
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;你可以通过执行 &lt;code class=&quot;highlighter-rouge&quot;&gt;rake middleware&lt;/code&gt; 来查看你开启的中间件。&lt;/p&gt;
+
+&lt;p&gt;不知道各个中间件有什么作用的话，可以看看&lt;a href=&quot;http://guides.ruby-china.org/rails_on_rack.html&quot;&gt;Rails on Rack&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Rails的设计目标是提供Web开发的最佳实践，所以无论你需要不需要，Rails默认提供了开发Web所有可能的组件，也许其中有一些你可能一辈子都用不上。Rails的哲学是： &lt;strong&gt;提供最全的功能集给你，如果你用不到，你自己手工一个一个关闭&lt;/strong&gt; 。但是这样带来的结果就是默认带了太多不必要的冗余功能，造成性能损耗极大。关闭的方式很简单，如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#config/application.rb
+config.middleware.delete Rack::ETag
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;rails-api&quot;&gt;Rails Api&lt;/h1&gt;
+
+&lt;p&gt;如果你想搭建纯api的项目，可以使用gem &lt;a href=&quot;https://github.com/spastorino/rails-api&quot;&gt;rails-api&lt;/a&gt; 或者 &lt;a href=&quot;https://github.com/ruby-grape/grape&quot;&gt;Grape&lt;/a&gt;。如果没了解过Grape，这里资料的比较全面&lt;a href=&quot;http://www.ruby-grape.org/projects/&quot;&gt;Community projects&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;我们可以看看这篇&lt;a href=&quot;http://robbinfan.com/blog/40/ruby-off-rails&quot;&gt;Ruby社区应该去Rails化了&lt;/a&gt;,相信大家都看过，API分离是发展的需要。&lt;/p&gt;
+
+&lt;h1 id=&quot;gemfile&quot;&gt;Gemfile太肥了&lt;/h1&gt;
+
+&lt;p&gt;引用太多gem会让你的项目“更重”。你应该检查一下你的Gemfile，确保你引入的gem是否有必要存在，是否在合适的group中，能否设置require: false等。&lt;/p&gt;
+
+&lt;p&gt;要定时给rails升级，升级有可能让已有的问题可到改善，&lt;a href=&quot;http://zhangliwen.site/rails/2016/09/13/how_to_upgrade_to_rails_4_2.html&quot;&gt;升级心得&lt;/a&gt;。将有内存大泄露的&lt;a href=&quot;https://ruby-china.org/topics/27761&quot;&gt;Gem&lt;/a&gt;升级或替换掉&lt;/p&gt;
+
+&lt;h1 id=&quot;section-2&quot;&gt;引用&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://robbinfan.com/blog/40/ruby-off-rails&quot;&gt;Ruby社区应该去Rails化了&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://guides.ruby-china.org/rails_on_rack.html&quot;&gt;Rails on Rack&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://naturaily.com/blog/post/rails-on-a-diet&quot;&gt;Rails on a diet&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.amberbit.com/blog/2014/2/14/putting-ruby-on-rails-on-a-diet/&quot;&gt;Putting Ruby on Rails on a diet&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 13 Oct 2016 00:00:00 +0800</pubDate>
+        <link>http://hitchhiker.ma/rails/2016/10/13/rails_on_a_diet.html</link>
+        <guid isPermaLink="true">http://hitchhiker.ma/rails/2016/10/13/rails_on_a_diet.html</guid>
+        
+        
+        <category>rails</category>
+        
+      </item>
     
       <item>
         <title>Rails如何升级到4.2</title>
