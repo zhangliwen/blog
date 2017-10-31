@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> Monit - 监控你的服务器 — monitor your unix system &raquo;  Liwen</title>
+<meta name="description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta name="keywords" content="">
+<link rel="canonical" href="http://hitchhiker.ma/ssl/2016/12/09/monitor_your_unix_system.html">
+        
+
+
+
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Monit - 监控你的服务器" />
+<meta name="twitter:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+" />
+<meta name="twitter:image" content="http://hitchhiker.ma" />
+
+<!-- Google plus -->
+<meta name="author" content="">
+<link rel="author" href="">
+
+<!-- Open Graph -->
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Monit - 监控你的服务器">
+<meta property="og:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta property="og:url" content="http://hitchhiker.ma/ssl/2016/12/09/monitor_your_unix_system.html">
+<meta property="og:site_name" content="Liwen">
+
+        <link href='https://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/css/main.css">
+
+  <link rel="stylesheet" href="/assets/vendor/highlight/styles/solarized_dark.css">
+
+<link rel="stylesheet" href="/assets/vendor/font-awesome/css/font-awesome.css">
+
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <header class="header">
+    <div class="navigation">
+        <a href="/" class="logo">Liwen</a>
+
+        <ul class="menu">
+            <li class="menu__entry"><a href="/about">About</a></li>
+            <li class="menu__entry"><a href="/">Blog</a></li>
+        </ul>
+    </div>
+
+    <ul class="social-links">
+        
+            <a href="https://github.com/zhangliwen" class="social-links__entry" target="_blank">
+                <i class="fa fa-github"></i>
+            </a>
+        
+
+        
+    </ul>
+</header>
+
+            <h1 class="page-title post-title">
+    <div class="page-title__text post-title__text">Monit - 监控你的服务器</div>
+    <div class="page-title__subtitle post-title__subtitle">monitor your unix system</div>
+</h1>
+
+<div class="content">
+    <h2 id="section">背景</h2>
+
+<p>服务器需要安装一个监控，用于监控每个服务的运行状况，内存、CPU、时间、交换空间等信息（可以自行配置）。经过Monit、god、eye之间，我选择了monit。其有点是占用内存小，而且基于unix与ruby无关。</p>
+
+<p>monit在设置邮箱信息之后，当服务运行数据超过设置的参数数据时，会自动发出邮件的警报信息。</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>在官网https://mmonit.com/monit/下载Source code的tar.gz文件，解压后执行：</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code> <span class="nb">cd </span>monit
+ ./configure
+ make
+ make install
+</code></pre>
+</div>
+
+<h2 id="setting">Setting</h2>
+<p>本人使用自动部署工具<a href="https://github.com/capistrano/capistrano">capistrano3</a>,这里介绍monit + capistrano3的配置：</p>
+
+<p>在config/deploy.rb文件中，添加：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>...
+load 'config/recipes/monit.rb'  # 监控参数的配置，警报
+load 'config/recipes/mysh.rb'   #通过shell来完成服务开启和关闭
+load 'config/recipes/base.rb'   #定义monit全局方法
+
+set :monit_port, 2000
+set :monit_password, '***'
+
+# 自动发邮件警报
+set :gmail_username, '***'
+set :gmail_password, '***'
+
+...
+</code></pre>
+</div>
+
+<p>在config中添加一个文件夹：recipes</p>
+
+<p>recipes/monit.rb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">namespace</span> <span class="ss">:monit</span> <span class="k">do</span>
+
+  <span class="n">desc</span> <span class="s1">'Server setup tasks'</span>
+  <span class="n">task</span> <span class="ss">:setup</span> <span class="k">do</span>
+    <span class="n">invoke</span> <span class="s1">'mysh:setup'</span>
+
+    <span class="c1"># 这里的monit:*_config的配置文件，都存放在lib/templates/monit/文件夹中</span>
+    <span class="n">invoke</span> <span class="s1">'monit:monitrc_config'</span>
+    <span class="n">invoke</span> <span class="s1">'monit:nginx_config'</span>
+    <span class="n">invoke</span> <span class="s1">'monit:redis_config'</span>
+    <span class="n">invoke</span> <span class="s1">'monit:sidekiq_config'</span>
+    <span class="n">invoke</span> <span class="s1">'monit:solr_config'</span>
+    <span class="n">invoke</span> <span class="s1">'monit:unicorn_config'</span>
+
+    <span class="n">invoke</span> <span class="s1">'monit:syntax'</span>
+    <span class="n">invoke</span> <span class="s1">'monit:reload'</span>
+  <span class="k">end</span>
+
+  <span class="sx">%w[monitrc nginx redis sidekiq solr unicorn]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+    <span class="n">desc</span> <span class="s2">"Generate config file for </span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2"> process"</span>
+    <span class="n">task</span> <span class="s2">"</span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2">_config"</span> <span class="k">do</span>
+      <span class="n">on</span> <span class="n">roles</span> <span class="ss">:app</span> <span class="k">do</span>
+        <span class="n">upload!</span> <span class="n">monit_template</span><span class="p">(</span><span class="nb">name</span><span class="p">),</span> <span class="n">tmp_path</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+        <span class="n">final_path</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="sx">%w[start stop restart syntax reload]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">command</span><span class="o">|</span>
+    <span class="n">desc</span> <span class="s2">"Run Monit </span><span class="si">#{</span><span class="n">command</span><span class="si">}</span><span class="s2"> script"</span>
+    <span class="n">task</span> <span class="n">command</span> <span class="k">do</span>
+      <span class="n">on</span> <span class="n">roles</span> <span class="ss">:app</span> <span class="k">do</span>
+        <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="s2">"service monit </span><span class="si">#{</span><span class="n">command</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">after</span> <span class="s1">'deploy:started'</span><span class="p">,</span> <span class="s1">'monit:reload'</span>
+
+<span class="k">end</span>
+
+</code></pre>
+</div>
+
+<p>recipes/mysh.rb文件</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">namespace</span> <span class="ss">:mysh</span> <span class="k">do</span>
+
+  <span class="n">task</span> <span class="ss">:setup</span> <span class="k">do</span>
+    <span class="n">invoke</span> <span class="ss">:'mysh:thin'</span>
+    <span class="n">invoke</span> <span class="ss">:'mysh:sidekiq'</span>
+    <span class="n">invoke</span> <span class="ss">:'mysh:redis-server'</span>
+    <span class="n">invoke</span> <span class="ss">:'mysh:solr'</span>
+    <span class="n">invoke</span> <span class="ss">:'mysh:unicorn'</span>
+
+    <span class="sx">%w[startRedis.sh]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+      <span class="n">on</span> <span class="n">roles</span> <span class="ss">:app</span> <span class="k">do</span>
+        <span class="n">upload!</span> <span class="n">mysh_template</span><span class="p">(</span><span class="nb">name</span><span class="p">),</span> <span class="n">tmp_path</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+        <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:chmod</span><span class="p">,</span> <span class="s2">"a+x </span><span class="si">#{</span><span class="n">tmp_path</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="sx">%w[thin sidekiq redis-server solr unicorn]</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+    <span class="n">desc</span> <span class="s2">"Generate shell file for </span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2"> start shell"</span>
+    <span class="n">task</span> <span class="nb">name</span> <span class="k">do</span>
+      <span class="n">on</span> <span class="n">roles</span> <span class="ss">:app</span> <span class="k">do</span>
+        <span class="n">upload!</span> <span class="n">mysh_template</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2">.sh"</span><span class="p">),</span> <span class="n">tmp_path</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2">.sh"</span><span class="p">)</span>
+        <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:chmod</span><span class="p">,</span> <span class="s2">"a+x </span><span class="si">#{</span><span class="n">tmp_path</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2">.sh"</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:cp</span><span class="p">,</span> <span class="s2">"</span><span class="si">#{</span><span class="n">tmp_path</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2">.sh"</span><span class="p">)</span><span class="si">}</span><span class="s2"> /etc/init.d/</span><span class="si">#{</span> <span class="nb">name</span> <span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="sx">%w[sidekiq redis-server]</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>recipes/base.rb文件</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="nf">monit_template</span><span class="p">(</span><span class="n">template_name</span><span class="p">)</span>
+  <span class="n">menu_path</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'../../../lib/templates/monit'</span><span class="p">,</span> <span class="kp">__FILE__</span><span class="p">)</span>
+  <span class="n">main_menu_template</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">menu_path</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span> <span class="n">template_name</span> <span class="si">}</span><span class="s2">.erb"</span><span class="p">))</span>
+  <span class="no">StringIO</span><span class="p">.</span><span class="nf">new</span> <span class="n">main_menu_template</span><span class="p">.</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">mysh_template</span><span class="p">(</span><span class="n">template_name</span><span class="p">)</span>
+  <span class="n">menu_path</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'../../../lib/templates/mysh'</span><span class="p">,</span> <span class="kp">__FILE__</span><span class="p">)</span>
+  <span class="n">main_menu_template</span> <span class="o">=</span> <span class="no">ERB</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">menu_path</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span> <span class="n">template_name</span> <span class="si">}</span><span class="s2">.erb"</span><span class="p">))</span>
+  <span class="no">StringIO</span><span class="p">.</span><span class="nf">new</span> <span class="n">main_menu_template</span><span class="p">.</span><span class="nf">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">tmp_path</span><span class="p">(</span><span class="n">process_name</span><span class="p">)</span>
+  <span class="s2">"/tmp/</span><span class="si">#{</span><span class="n">process_name</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">final_path</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+  <span class="n">path</span> <span class="o">||=</span> <span class="s2">"/etc/monit/conf.d/</span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">.conf"</span>
+
+  <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:chmod</span><span class="p">,</span> <span class="s2">"644 </span><span class="si">#{</span><span class="n">tmp_path</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+  <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:mv</span><span class="p">,</span> <span class="s2">"</span><span class="si">#{</span><span class="n">tmp_path</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+  <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:chown</span><span class="p">,</span> <span class="s2">"root </span><span class="si">#{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+  <span class="n">execute</span> <span class="ss">:sudo</span><span class="p">,</span> <span class="ss">:chmod</span><span class="p">,</span> <span class="s2">"644 </span><span class="si">#{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>在lib/templates/monit/文件夹下定义各个服务的监控参数,列举几个，如：</p>
+
+<p>lib/templates/monit/monitrc.erb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">set</span> <span class="n">daemon</span> <span class="mi">30</span>
+
+<span class="n">set</span> <span class="n">logfile</span> <span class="sr">/var/</span><span class="n">log</span><span class="o">/</span><span class="n">monit</span><span class="p">.</span><span class="nf">log</span>
+<span class="n">set</span> <span class="n">idfile</span> <span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">monit</span><span class="o">/</span><span class="nb">id</span>
+<span class="n">set</span> <span class="n">statefile</span> <span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">monit</span><span class="o">/</span><span class="n">state</span>
+
+<span class="n">set</span> <span class="n">eventqueue</span>
+  <span class="n">basedir</span> <span class="sr">/var/</span><span class="n">lib</span><span class="o">/</span><span class="n">monit</span><span class="o">/</span><span class="n">events</span>
+  <span class="n">slots</span> <span class="mi">100</span>
+
+<span class="n">set</span> <span class="n">mailserver</span> <span class="n">smtp</span><span class="p">.</span><span class="nf">gmail</span><span class="p">.</span><span class="nf">com</span> <span class="n">port</span> <span class="mi">587</span>
+  <span class="n">username</span> <span class="s2">"&lt;%= fetch :gmail_username %&gt;"</span> 
+  <span class="n">password</span> <span class="s2">"&lt;%= fetch :gmail_password %&gt;"</span>
+  <span class="n">using</span> <span class="n">tlsv1</span>
+  <span class="n">with</span> <span class="n">timeout</span> <span class="mi">30</span> <span class="n">seconds</span>
+
+<span class="o">&lt;</span><span class="sx">%= "set alert #{fetch(:monit_alert_email)}" unless fetch(:monit_alert_email).nil? %&gt;
+
+&lt;% unless fetch(:monit_password).nil? %&gt;
+  set httpd port &lt;%=</span> <span class="n">fetch</span> <span class="ss">:monit_port</span> <span class="o">%&gt;</span>
+  <span class="n">allow</span> <span class="n">admin</span><span class="ss">:"&lt;%= fetch :monit_password %&gt;"</span>
+<span class="o">&lt;</span><span class="sx">% end </span><span class="o">%&gt;</span>
+</code></pre>
+</div>
+
+<p>nginx.erb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">check</span> <span class="n">process</span> <span class="n">nginx</span> <span class="n">with</span> <span class="n">pidfile</span> <span class="sr">/var/</span><span class="n">run</span><span class="o">/</span><span class="n">nginx</span><span class="p">.</span><span class="nf">pid</span>
+  <span class="n">start</span> <span class="n">program</span> <span class="o">=</span> <span class="s2">"/etc/init.d/nginx start"</span>
+  <span class="n">stop</span> <span class="n">program</span> <span class="o">=</span> <span class="s2">"/etc/init.d/nginx stop"</span>
+  <span class="k">if</span> <span class="n">children</span> <span class="o">&gt;</span> <span class="mi">250</span> <span class="k">then</span> <span class="n">restart</span>
+</code></pre>
+</div>
+
+<p>unicorn.erb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">check</span> <span class="n">process</span> <span class="o">&lt;</span><span class="sx">%= fetch :unicorn_process_name %&gt; with pidfile &lt;%=</span> <span class="n">fetch</span> <span class="ss">:unicorn_pid</span> <span class="o">%&gt;</span>
+  <span class="n">start</span> <span class="o">=</span> <span class="s2">"/bin/bash &lt;%= fetch(:unicorn_sh)%&gt; start"</span> <span class="n">as</span> <span class="n">uid</span> <span class="o">&lt;</span><span class="sx">%= fetch(:user) %&gt; and gid &lt;%=</span> <span class="n">fetch</span><span class="p">(</span><span class="ss">:user</span><span class="p">)</span> <span class="o">%&gt;</span>
+  <span class="n">stop</span> <span class="o">=</span> <span class="s2">"/bin/bash &lt;%= fetch(:unicorn_sh)%&gt; stop"</span>
+  <span class="k">if</span> <span class="n">memory</span> <span class="n">usage</span> <span class="o">&gt;</span> <span class="mi">30</span><span class="o">%</span> <span class="k">for</span> <span class="mi">1</span> <span class="n">cycles</span> <span class="k">then</span> <span class="n">restart</span>
+  <span class="k">if</span> <span class="n">cpu</span> <span class="o">&gt;</span> <span class="mi">48</span><span class="o">%</span> <span class="k">for</span> <span class="mi">3</span> <span class="n">cycles</span> <span class="k">then</span> <span class="n">restart</span>
+  
+
+<span class="o">&lt;</span><span class="sx">% fetch(:unicorn_workers_number).times </span><span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="sx">%&gt;
+  &lt;% pid = fetch(:unicorn_pid).sub(".pid", ".#{n}.pid") %&gt;</span>
+  <span class="n">check</span> <span class="n">process</span> <span class="o">&lt;</span><span class="sx">%= fetch :unicorn_worker_name %&gt;&lt;%=</span> <span class="n">n</span> <span class="sx">%&gt; with pidfile &lt;%= pid %&gt;</span>
+    <span class="n">stop</span> <span class="n">program</span> <span class="o">=</span> <span class="s2">"/usr/bin/test -s &lt;%= pid %&gt; &amp;&amp; /bin/kill -QUIT `cat &lt;%= pid %&gt;`"</span>
+<span class="o">&lt;</span><span class="sx">% end </span><span class="o">%&gt;</span>
+</code></pre>
+</div>
+
+<p>sidekiq.erb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">check</span> <span class="n">process</span> <span class="n">sidekiq</span>
+  <span class="n">with</span> <span class="n">pidfile</span> <span class="o">&lt;</span><span class="sx">%= fetch(:sidekiq_pid)%&gt;
+  start program =</span> <span class="s2">"/etc/init.d/sidekiq start"</span> <span class="n">with</span> <span class="n">timeout</span> <span class="mi">90</span> <span class="n">seconds</span>
+  <span class="n">stop</span> <span class="n">program</span> <span class="o">=</span> <span class="s2">"/etc/init.d/sidekiq stop"</span> <span class="n">with</span> <span class="n">timeout</span> <span class="mi">90</span> <span class="n">seconds</span>
+</code></pre>
+</div>
+
+<p>solr.erb</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">check</span> <span class="n">process</span> <span class="n">solr</span>
+  <span class="n">with</span> <span class="n">pidfile</span> <span class="o">&lt;</span><span class="sx">%= fetch(:solr_pid)%&gt;
+  start =</span> <span class="s2">"/bin/bash &lt;%= fetch(:solr_sh)%&gt; start"</span>
+  <span class="n">stop</span> <span class="o">=</span> <span class="s2">"/bin/bash -c '/bin/sh &lt;%= fetch(:solr_sh)%&gt; stop'"</span>
+</code></pre>
+</div>
+
+<p>在lib/templates/mysh/文件夹里，存放的是通过shell启动的服务启动器，如：</p>
+
+<p>lib/templates/mysh/sidekiq.sh.erb</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+start <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path %&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_ruby_version<span class="o">)</span>%&gt; <span class="k">do </span>bundle <span class="nb">exec </span>sidekiq --index 0 --pidfile &lt;%<span class="o">=</span> fetch<span class="o">(</span>:sidekiq_pid<span class="o">)</span>%&gt; --environment <span class="nv">RAILS_ENV</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rails_env<span class="o">)</span>%&gt; --logfile &lt;%<span class="o">=</span> fetch<span class="o">(</span>:sidekiq_log<span class="o">)</span>%&gt; --daemon <span class="o">)</span>
+<span class="o">}</span>
+
+stop <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path %&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_ruby_version<span class="o">)</span>%&gt; <span class="k">do </span>bundle <span class="nb">exec </span>sidekiqctl stop &lt;%<span class="o">=</span> fetch<span class="o">(</span>:sidekiq_pid<span class="o">)</span>%&gt; 10 <span class="o">)</span>
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="nv">$1</span> <span class="k">in
+  </span>start<span class="p">)</span>
+    start
+  <span class="p">;;</span>
+  stop<span class="p">)</span>
+    stop
+  <span class="p">;;</span>
+  <span class="k">*</span><span class="p">)</span>
+  <span class="nb">echo</span> <span class="s2">$"Usage: </span><span class="nv">$0</span><span class="s2"> {start|stop}"</span>
+  <span class="nb">exit </span>1
+  <span class="p">;;</span>
+<span class="k">esac</span>
+
+<span class="nb">exit </span>0
+</code></pre>
+</div>
+
+<p>lib/templates/mysh/solr.sh.erb</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+start <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path%&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin <span class="nv">RAILS_ENV</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rails_env<span class="o">)</span>%&gt; &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_ruby_version<span class="o">)</span>%&gt; <span class="k">do </span>bundle <span class="nb">exec </span>rake sunspot:solr:start
+<span class="o">}</span>
+
+stop <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path%&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin <span class="nv">RAILS_ENV</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rails_env<span class="o">)</span>%&gt; &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_ruby_version<span class="o">)</span>%&gt; <span class="k">do </span>bundle <span class="nb">exec </span>rake sunspot:solr:stop
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="nv">$1</span> <span class="k">in
+  </span>start<span class="p">)</span>
+    start
+  <span class="p">;;</span>
+  stop<span class="p">)</span>
+    stop
+  <span class="p">;;</span>
+  <span class="k">*</span><span class="p">)</span>
+  <span class="nb">echo</span> <span class="s2">$"Usage: </span><span class="nv">$0</span><span class="s2"> {start|stop}"</span>
+  <span class="nb">exit </span>1
+  <span class="p">;;</span>
+<span class="k">esac</span>
+
+<span class="nb">exit </span>0
+</code></pre>
+</div>
+
+<p>lib/templates/mysh/unicorn.sh.erb</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># Set the environment, as required by Monit</span>
+<span class="nb">export </span><span class="nv">GEM_PATH</span><span class="o">=</span><span class="s2">"&lt;%= fetch(:rvm_home) %&gt;/gems/&lt;%= fetch(:rvm_ruby_version) %&gt;:&lt;%= fetch(:rvm_home) %&gt;/gems/&lt;%= fetch(:rvm_ruby_version) %&gt;@global"</span>
+<span class="nb">export </span><span class="nv">GEM_HOME</span><span class="o">=</span><span class="s2">"&lt;%= fetch(:rvm_home) %&gt;/gems/&lt;%= fetch(:rvm_ruby_version) %&gt;"</span>
+
+start <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path %&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin <span class="nv">RAILS_ENV</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rails_env<span class="o">)</span>%&gt; <span class="nv">BUNDLE_GEMFILE</span><span class="o">=</span>&lt;%<span class="o">=</span> current_path%&gt;/Gemfile &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_ruby_version<span class="o">)</span>%&gt; <span class="k">do </span>bundle <span class="nb">exec </span>unicorn -c &lt;%<span class="o">=</span> fetch<span class="o">(</span>:unicorn_config_path<span class="o">)</span>%&gt; -E &lt;%<span class="o">=</span> fetch<span class="o">(</span>:rails_env<span class="o">)</span>%&gt; -D  <span class="o">)</span>
+<span class="o">}</span>
+
+stop <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path %&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin /usr/bin/env <span class="nb">kill</span> -s QUIT <span class="sb">`</span>cat &lt;%<span class="o">=</span> fetch<span class="o">(</span>:unicorn_pid<span class="o">)</span>%&gt;<span class="sb">`</span> <span class="o">)</span>
+<span class="o">}</span>
+
+restart <span class="o">()</span> <span class="o">{</span>
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path %&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin /usr/bin/env <span class="nb">kill</span> -s USR2 <span class="sb">`</span>cat &lt;%<span class="o">=</span> fetch<span class="o">(</span>:unicorn_pid<span class="o">)</span>%&gt;<span class="sb">`</span> <span class="o">)</span>
+  sleep 5
+  <span class="nb">cd</span> &lt;%<span class="o">=</span> current_path %&gt; <span class="o">&amp;&amp;</span> <span class="o">(</span> <span class="nv">RVM_BIN_PATH</span><span class="o">=</span>&lt;%<span class="o">=</span> fetch<span class="o">(</span>:rvm_home<span class="o">)</span>%&gt;/bin/rvm/bin /usr/bin/env <span class="nb">kill</span> -s QUIT <span class="sb">`</span>cat &lt;%<span class="o">=</span> fetch<span class="o">(</span>:unicorn_pid<span class="o">)</span>%&gt;<span class="sb">`</span> <span class="o">)</span>
+<span class="o">}</span>
+
+<span class="k">case</span> <span class="nv">$1</span> <span class="k">in
+  </span>start<span class="p">)</span>
+    start
+  <span class="p">;;</span>
+  stop<span class="p">)</span>
+    stop
+  <span class="p">;;</span>
+  restart<span class="p">)</span>
+    restart
+  <span class="p">;;</span>
+  <span class="k">*</span><span class="p">)</span>
+  <span class="nb">echo</span> <span class="s2">$"Usage: </span><span class="nv">$0</span><span class="s2"> {start|stop|restart}"</span>
+  <span class="nb">exit </span>1
+  <span class="p">;;</span>
+<span class="k">esac</span>
+
+<span class="nb">exit </span>0
+</code></pre>
+</div>
+
+<p>效果如图所示：
+<img src="https://sources.biaker.com/pattern/image_url/biaker_20171031182540.png" alt="" />
+<img src="https://sources.biaker.com/pattern/image_url/biaker_20171031182721.png" alt="" /></p>
+
+</div>
+
+<div class="about">
+    <div class="about__devider">*****</div>
+    <div class="about__text">
+        Written by <strong>  Zhang Liwen </strong>
+        on <strong>09 December 2016</strong>
+    </div>
+</div>
+
+
+        </div>
+
+        <script src="/assets/vendor/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+    </body>
+</html>
