@@ -6,9 +6,362 @@
 </description>
     <link>http://hitchhiker.ma/</link>
     <atom:link href="http://hitchhiker.ma/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 02 Nov 2017 14:07:19 +0800</pubDate>
-    <lastBuildDate>Thu, 02 Nov 2017 14:07:19 +0800</lastBuildDate>
+    <pubDate>Thu, 02 Nov 2017 14:46:42 +0800</pubDate>
+    <lastBuildDate>Thu, 02 Nov 2017 14:46:42 +0800</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
+    
+      <item>
+        <title>Tensorflow说明与安装</title>
+        <description>&lt;h1 id=&quot;tensorflow&quot;&gt;Tensorflow是说明？&lt;/h1&gt;
+
+&lt;p&gt;TensorFlow深度学习框架&lt;/p&gt;
+
+&lt;p&gt;Google不仅是大数据和云计算的领导者，在机器学习和深度学习上也有很好的实践和积累，在2015年年底开源了内部使用的深度学习框架TensorFlow。&lt;/p&gt;
+
+&lt;p&gt;与Caffe、Theano、Torch、MXNet等框架相比，TensorFlow在Github上Fork数和Star数都是最多的，而且在图形分类、音频处理、推荐系统和自然语言处理等场景下都有丰富的应用。最近流行的Keras框架底层默认使用TensorFlow，著名的斯坦福CS231n课程使用TensorFlow作为授课和作业的编程语言，国内外多本TensorFlow书籍已经在筹备或者发售中，AlphaGo开发团队Deepmind也计划将神经网络应用迁移到TensorFlow中，这无不印证了TensorFlow在业界的流行程度。&lt;/p&gt;
+
+&lt;p&gt;现在如果你还有兴趣了解，请点击&lt;a href=&quot;http://blog.jobbole.com/105602/&quot;&gt;TensorFlow深度学习，一篇文章就够了&lt;/a&gt;开始学习之旅。
+下面讲解ruby 使用tensorflow的方法：&lt;/p&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;要求&lt;/h1&gt;
+
+&lt;p&gt;Ruby version &amp;gt; 2.2.0&lt;/p&gt;
+
+&lt;h2 id=&quot;install-bazel&quot;&gt;Install Bazel&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://docs.bazel.build/versions/master/install.html&quot;&gt;Bazel Installation&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;举个例子，在ubuntu环境下安装:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-get install openjdk-8-jdk
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update &amp;amp;&amp;amp; sudo apt-get install oracle-java8-installer
+echo &quot;deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8&quot; | sudo tee /etc/apt/sources.list.d/bazel.list
+curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+sudo apt-get update &amp;amp;&amp;amp; sudo apt-get install bazel
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;install-tensorflow&quot;&gt;Install Tensorflow&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.tensorflow.org/install/install_linux&quot;&gt;Tensorflow Installation&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-get install python-pip python-dev python-virtualenv
+virtualenv --system-site-packages targetDirectory
+cd targetDirectory
+source ./bin/activate
+  easy_install -U pip
+  pip install --upgrade tensorflow
+  pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.3.0-cp27-none-linux_x86_64.whl
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;clone-and-install-tensorflow&quot;&gt;Clone and Install TensorFlow&lt;/h2&gt;
+
+&lt;p&gt;具体的参数可以修改，如果需要支持，需要安装一些依赖的库&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone --recurse-submodules https://github.com/tensorflow/tensorflow
+cd tensorflow
+./configure
+  Please specify the location of python. [Default is /usr/bin/python]: /usr/bin/python
+  Please input the desired Python library path to use.  Default is [/usr/local/lib/python2.7/dist-packages] /usr/local/lib/python2.7/dist-packages
+  Do you wish to build TensorFlow with jemalloc as malloc support? [Y/n]: Y
+  Do you wish to build TensorFlow with Google Cloud Platform support? [Y/n]: Y
+  Do you wish to build TensorFlow with Hadoop File System support? [Y/n]: Y
+  Do you wish to build TensorFlow with Amazon S3 File System support? [Y/n]: Y
+  Do you wish to build TensorFlow with XLA JIT support? [y/N]: N
+  Do you wish to build TensorFlow with GDR support? [y/N]: N
+  Do you wish to build TensorFlow with VERBS support? [y/N]: N
+  Do you wish to build TensorFlow with OpenCL support? [y/N]: N
+  Do you wish to build TensorFlow with CUDA support? [y/N]: N
+  Do you wish to build TensorFlow with MPI support? [y/N]: N
+  Please specify optimization flags to use during compilation when bazel option &quot;--config=opt&quot; is specified [Default is -march=native]: -march=native
+
+bazel build -c opt //tensorflow:libtensorflow.so  
+
+# Linux
+sudo cp bazel-bin/tensorflow/libtensorflow.so /usr/lib/
+sudo cp bazel-bin/tensorflow/libtensorflow_framework.so /usr/lib/ #官网不需要执行这一步骤，我亲自验证不执行会出错
+
+# OSX
+sudo cp bazel-bin/tensorflow/libtensorflow.so /usr/local/lib
+export LIBRARY_PATH=$PATH:/usr/local/lib (may be required)
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;install-swig&quot;&gt;Install Swig&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.swig.org/download.html&quot;&gt;安装包&lt;/a&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tar -zxvf swig-3.0.12.tar.gz
+cd swig-3.0.12
+./configure
+make
+make install
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;install-tensorflowrb&quot;&gt;Install tensorflow.rb&lt;/h2&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/somaticio/tensorflow.rb.git
+cd tensorflow.rb/ext/sciruby/tensorflow_c
+(rvm use 2.2.2)
+ruby extconf.rb (如果出错，则没安装swig)
+make
+make install # Creates ../lib/ruby/site_ruby/X.X.X/&amp;lt;arch&amp;gt;/sciruby/Tensorflow.{bundle, so}
+cd ./../../..
+bundle install  (可以Gemfile修改为source &#39;https://ruby.taobao.org&#39;)
+bundle exec rake install
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip下载后解压&lt;/p&gt;
+
+&lt;p&gt;将imagenet_comp_graph_label_strings.txt和tensorflow_inception_graph.pb放在tensorflow.rb/image目录下&lt;/p&gt;
+
+&lt;h2 id=&quot;test&quot;&gt;Test&lt;/h2&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd tensorflow.rb/image &amp;amp;&amp;amp; rvm 2.2.0
+ruby classify_image.rb
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;结果:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;I tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX
+Trying to classify image file: ./mysore_palace.jpg
+The top five results are 
+palace
+0.7095823287963867
+monastery
+0.14657701551914215
+mosque
+0.08988487720489502
+church
+0.01842896267771721
+bell cote
+0.012109429575502872
+castle
+0.007050110027194023
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;grape-on-rack&quot;&gt;grape-on-rack&lt;/h2&gt;
+
+&lt;p&gt;将Tensorflow搭建成Grape接口，作为rack的app, Ruby Version &amp;gt;= 2.2.0&lt;/p&gt;
+
+&lt;p&gt;执行bundle install, Gemfile如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;source &#39;https://ruby.taobao.org&#39;
+
+ruby &#39;2.2.2&#39;
+
+gem &#39;grape&#39;, &#39;~&amp;gt; 0.16&#39;
+gem &#39;grape-entity&#39;
+gem &#39;grape-swagger&#39;
+gem &#39;grape-swagger-entity&#39;
+gem &#39;json&#39;
+gem &#39;rack-cors&#39;
+gem &#39;mime-types&#39;
+gem &#39;nokogiri&#39;
+
+gem &#39;listen&#39;, &#39;3.1.1&#39;
+gem &#39;tensorflow&#39;, &#39;0.0.1&#39;
+gem &#39;grape_logging&#39;, &#39;1.2.1&#39;
+
+group :development do
+  gem &#39;rake&#39;
+  gem &#39;guard&#39;
+  gem &#39;guard-bundler&#39;
+  gem &#39;guard-rack&#39;
+  gem &#39;rubocop&#39;
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;app/biaker_app.rb文件：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Biaker
+  class App
+    def initialize
+      @filenames = [&#39;&#39;, &#39;.html&#39;, &#39;index.html&#39;, &#39;/index.html&#39;]
+      @rack_static = ::Rack::Static.new(
+        lambda { [404, {}, []] },
+        root: File.expand_path(&#39;../../public&#39;, __FILE__),
+        urls: [&#39;/&#39;]
+      )
+    end
+
+    def self.instance
+      @instance ||= Rack::Builder.new do
+        use Rack::Cors do
+          allow do
+            origins &#39;*&#39;
+            resource &#39;*&#39;, headers: :any, methods: :get
+          end
+        end
+
+        run Biaker::App.new
+      end.to_app
+    end
+
+    def call(env)
+      # api
+      response = Biaker::API.call(env)
+
+      # Check if the App wants us to pass the response along to others
+      if response[1][&#39;X-Cascade&#39;] == &#39;pass&#39;
+        # static files
+        request_path = env[&#39;PATH_INFO&#39;]
+        @filenames.each do |path|
+          response = @rack_static.call(env.merge(&#39;PATH_INFO&#39; =&amp;gt; request_path + path))
+          return response if response[0] != 404
+        end
+      end
+
+      # Serve error pages or respond with API response
+      case response[0]
+      when 404, 500
+        content = @rack_static.call(env.merge(&#39;PATH_INFO&#39; =&amp;gt; &quot;/errors/#{response[0]}.html&quot;))
+        [response[0], content[1], content[2]]
+      else
+        response
+      end
+    end
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;app/api.rb文件：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Biaker
+  class API &amp;lt; Grape::API
+    prefix &#39;api&#39;
+    format :json
+
+    # log
+    logfile = File.open(&#39;log/api.log&#39;, &#39;a&#39;)
+    logfile.sync = true
+    logger Logger.new GrapeLogging::MultiIO.new(STDOUT, logfile)
+    use GrapeLogging::Middleware::RequestLogger, logger: logger, format: GrapeLogging::Formatters::Default.new
+    
+    # 接收所抛出的异常, 状态码为404
+    rescue_from :all do |e|
+      API.logger.error e  #error log
+      error! e.message, 404
+    end
+    
+
+    helpers do
+      def render_json(data, total = nil, msg = &#39;OK&#39;, code = 200)
+        present({msg: msg, code: code, total: total, data: data})
+      end
+    end
+
+
+    mount ::Biaker::ImageRecognition
+    add_swagger_documentation api_version: &#39;v1&#39;
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;此时可以参照tensorflow.rb/image/classify_image.rb文件，建立一个接口，api/image recognition.rb文件如下：&lt;/p&gt;
+
+&lt;p&gt;注意tensorflow_inception_graph.pb 和 imagenet_comp_graph_label_strings.txt文件的存放位置&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Biaker
+  class ImageRecognition &amp;lt; Grape::API
+    format :json
+    desc &#39;图案识别.&#39;
+    resource :image_recognitions do
+      params do
+        requires :path, type: String, desc: &#39;必须是本地图片的path，不能是图片url&#39;
+      end
+      post do
+        require &#39;tensorflow&#39;
+        scope_class = Tensorflow::Scope.new
+        image_file = params[:path]
+        raise ArgumentError, &quot;Cannot find image file: #{image_file}&quot; unless File.file?(image_file)
+
+        input = Const(scope_class, image_file)
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;ReadFile&#39;, &#39;ReadFile&#39;, nil, [input]))
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;DecodeJpeg&#39;, &#39;DecodeJpeg&#39;, Hash[&#39;channels&#39; =&amp;gt; 3], [output.output(0)]))
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;Cast&#39;, &#39;Cast&#39;, Hash[&#39;DstT&#39; =&amp;gt; 1], [output.output(0)]))
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;ExpandDims&#39;, &#39;ExpandDims&#39;, nil, [output.output(0), Const(scope_class.subscope(&#39;make_batch&#39;), 0, :int32)]))
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;ResizeBilinear&#39;, &#39;ResizeBilinear&#39;, nil, [output.output(0), Const(scope_class.subscope(&#39;size&#39;), [224, 224], :int32)]))
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;Sub&#39;, &#39;Sub&#39;, nil, [output.output(0), Const(scope_class.subscope(&#39;mean&#39;), 117.00, :float)]))
+        output = input.operation.g.AddOperation(Tensorflow::OpSpec.new(&#39;Div&#39;, &#39;Div&#39;, nil, [output.output(0), Const(scope_class.subscope(&#39;scale&#39;), 1.00, :float)])).output(0)
+        graph = scope_class.graph
+        session_op = Tensorflow::Session_options.new
+        session = Tensorflow::Session.new(graph, session_op)
+        out_tensor = session.run({}, [output], [])
+
+        # Run inference on *imageFile.
+        # For multiple images, session.Run() can be called in a loop (and
+        # concurrently). Alternatively, images can be batched since the model
+        # accepts batches of image data as input.
+        graph = Tensorflow::Graph.new
+        graph.read_file(&#39;/home/liwen/桌面/tensorflow.rb/image/tensorflow_inception_graph.pb&#39;)
+        tensor = Tensorflow::Tensor.new(out_tensor[0], :float)
+        sess = Tensorflow::Session.new(graph)
+        hash = {}
+        hash[graph.operation(&#39;input&#39;).output(0)] = tensor
+
+        # predictions is a vector containing probabilities of
+        # labels for each image in the &quot;batch&quot;. The batch size was 1.
+        # Find the most probably label index.
+        predictions = sess.run(hash, [graph.operation(&#39;output&#39;).output(0)], [])
+
+        predictions.flatten!
+        labels = {}
+        j = 0
+        File.foreach(&#39;/home/liwen/桌面/tensorflow.rb/image/imagenet_comp_graph_label_strings.txt&#39;) do |line|
+            labels[line] = predictions[j]
+            j += 1
+        end
+        result = labels.sort { |a, b| b[1].to_f &amp;lt;=&amp;gt; a[1].to_f }
+        render_json result[0..5]
+      end
+    end
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;最后启动rackup：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;rackup -D -p 9300 -P ./tmp/pids/tensorflow.pid
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可以在终端执行：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -X POST -i -F path=/...绝对路径.../mobile.png http://localhost:9300/api/image_recognitions
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;或者在其他rails项目中调用此接口：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;uri = URI(&#39;http://localhost:9300/api/image_recognitions&#39;)
+data = { path: &#39;/...绝对路径.../mobile.png&#39; }
+res = Net::HTTP.post_form(uri, data)
+result = JSON.parse(res.body)
+
+# result =&amp;gt; {&quot;msg&quot;=&amp;gt;&quot;OK&quot;, &quot;code&quot;=&amp;gt;200, &quot;total&quot;=&amp;gt;nil, &quot;data&quot;=&amp;gt;[[&quot;palace\n&quot;, 0.7095823287963867], [&quot;monastery\n&quot;, 0.14657701551914215], [&quot;mosque\n&quot;, 0.08988487720489502], [&quot;church\n&quot;, 0.01842896267771721], [&quot;bell cote\n&quot;, 0.012109429575502872], [&quot;castle\n&quot;, 0.007050110027194023]]}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+        <pubDate>Sun, 02 Jul 2017 00:00:00 +0800</pubDate>
+        <link>http://hitchhiker.ma/rails/2017/07/02/tensorflow_install.html</link>
+        <guid isPermaLink="true">http://hitchhiker.ma/rails/2017/07/02/tensorflow_install.html</guid>
+        
+        
+        <category>rails</category>
+        
+      </item>
     
       <item>
         <title>搜索相似的图片【集锦】</title>
