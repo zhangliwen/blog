@@ -2,7 +2,7 @@
 layout: post
 title: Monit - 监控你的服务器
 subtitle: "monitor your unix system"
-categories: [ssl]
+categories: [rails]
 ---
 
 # 背景

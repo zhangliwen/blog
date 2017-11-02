@@ -6,8 +6,8 @@
 </description>
     <link>http://hitchhiker.ma/</link>
     <atom:link href="http://hitchhiker.ma/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 02 Nov 2017 14:46:42 +0800</pubDate>
-    <lastBuildDate>Thu, 02 Nov 2017 14:46:42 +0800</lastBuildDate>
+    <pubDate>Thu, 02 Nov 2017 14:49:08 +0800</pubDate>
+    <lastBuildDate>Thu, 02 Nov 2017 14:49:08 +0800</lastBuildDate>
     <generator>Jekyll v3.1.6</generator>
     
       <item>
@@ -528,11 +528,11 @@ w2 = n2 / n
 &lt;p&gt;&lt;a href=&quot;http://www.isnowfy.com/similar-image-search/&quot;&gt;关于相似图片搜索&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Sat, 25 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://hitchhiker.ma/ssl/2017/03/25/similar_image_search.html</link>
-        <guid isPermaLink="true">http://hitchhiker.ma/ssl/2017/03/25/similar_image_search.html</guid>
+        <link>http://hitchhiker.ma/rails/2017/03/25/similar_image_search.html</link>
+        <guid isPermaLink="true">http://hitchhiker.ma/rails/2017/03/25/similar_image_search.html</guid>
         
         
-        <category>ssl</category>
+        <category>rails</category>
         
       </item>
     
@@ -864,11 +864,11 @@ restart &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&q
 &lt;img src=&quot;https://sources.biaker.com/pattern/image_url/biaker_20171031182721.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 </description>
         <pubDate>Fri, 09 Dec 2016 00:00:00 +0800</pubDate>
-        <link>http://hitchhiker.ma/ssl/2016/12/09/monitor_your_unix_system.html</link>
-        <guid isPermaLink="true">http://hitchhiker.ma/ssl/2016/12/09/monitor_your_unix_system.html</guid>
+        <link>http://hitchhiker.ma/rails/2016/12/09/monitor_your_unix_system.html</link>
+        <guid isPermaLink="true">http://hitchhiker.ma/rails/2016/12/09/monitor_your_unix_system.html</guid>
         
         
-        <category>ssl</category>
+        <category>rails</category>
         
       </item>
     

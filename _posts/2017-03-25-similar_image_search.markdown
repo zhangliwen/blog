@@ -2,7 +2,7 @@
 layout: post
 title: 搜索相似的图片【集锦】
 subtitle: "similar image search"
-categories: [ssl]
+categories: [rails]
 ---
 
 
