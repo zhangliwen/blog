@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> 搜索相似的图片【集锦】 — similar image search &raquo;  Liwen</title>
+<meta name="description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta name="keywords" content="">
+<link rel="canonical" href="http://hitchhiker.ma/ssl/2017/03/25/similar_image_search.html">
+        
+
+
+
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="搜索相似的图片【集锦】" />
+<meta name="twitter:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+" />
+<meta name="twitter:image" content="http://hitchhiker.ma" />
+
+<!-- Google plus -->
+<meta name="author" content="">
+<link rel="author" href="">
+
+<!-- Open Graph -->
+<meta property="og:locale" content="">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搜索相似的图片【集锦】">
+<meta property="og:description" content="分享创业历程所学所想与rails心得，供自己持续学习的动力。
+">
+<meta property="og:url" content="http://hitchhiker.ma/ssl/2017/03/25/similar_image_search.html">
+<meta property="og:site_name" content="Liwen">
+
+        <link href='https://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/assets/vendor/normalize-css/normalize.css">
+<link rel="stylesheet" href="/css/main.css">
+
+  <link rel="stylesheet" href="/assets/vendor/highlight/styles/solarized_dark.css">
+
+<link rel="stylesheet" href="/assets/vendor/font-awesome/css/font-awesome.css">
+
+    </head>
+
+    <body>
+        <div class="wrapper">
+            <header class="header">
+    <div class="navigation">
+        <a href="/" class="logo">Liwen</a>
+
+        <ul class="menu">
+            <li class="menu__entry"><a href="/about">About</a></li>
+            <li class="menu__entry"><a href="/">Blog</a></li>
+        </ul>
+    </div>
+
+    <ul class="social-links">
+        
+            <a href="https://github.com/zhangliwen" class="social-links__entry" target="_blank">
+                <i class="fa fa-github"></i>
+            </a>
+        
+
+        
+    </ul>
+</header>
+
+            <h1 class="page-title post-title">
+    <div class="page-title__text post-title__text">搜索相似的图片【集锦】</div>
+    <div class="page-title__subtitle post-title__subtitle">similar image search</div>
+</h1>
+
+<div class="content">
+    <p>在Google首页能看到<a href="http://www.google.com/insidesearch/searchbyimage.html">“相似图片搜索”</a>。</p>
+
+<p>你可以用一张图片，搜索互联网上所有与它相似的图片。点击<a href="http://images.google.com.hk/">搜索框</a>中照相机的图标。</p>
+
+<p><a href="http://images.google.com.hk/"><img src="http://image.beekka.com/blog/201107/bg2011072101.png" alt="" /></a></p>
+
+<p>一个对话框会出现。</p>
+
+<p><img src="http://image.beekka.com/blog/201107/bg2011072102.png" alt="" /></p>
+
+<p>你输入网片的网址，或者直接上传图片，Google就会找出与其相似的图片。下面这张图片是美国女演员Alyson Hannigan。</p>
+
+<p><img src="http://image.beekka.com/blog/201107/bg2011072103.jpg" alt="" /></p>
+
+<p>上传后，Google返回如下结果：</p>
+
+<p><img src="http://image.beekka.com/blog/201107/bg2011072104.jpg" alt="" /></p>
+
+<p>类似的”相似图片搜索引擎”还有不少，<a href="http://www.tineye.com/">TinEye</a>甚至可以找出照片的拍摄背景。</p>
+
+<p><img src="http://image.beekka.com/blog/201107/bg2011072105.jpg" alt="" /></p>
+
+<p>==========================================================</p>
+
+<p>这种技术的原理是什么？计算机怎么知道两张图片相似呢？</p>
+
+<p>根据<a href="http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html">Neal Krawetz</a>博士的解释，原理非常简单易懂。我们可以用一个快速算法，就达到基本的效果。</p>
+
+<p>这里的关键技术叫做”感知哈希算法”（Perceptual hash algorithm），它的作用是对每张图片生成一个”指纹”（fingerprint）字符串，然后比较不同图片的指纹。结果越接近，就说明图片越相似。</p>
+
+<p>下面是一个最简单的实现：</p>
+
+<p><strong>第一步，缩小尺寸。</strong></p>
+
+<p>将图片缩小到8×8的尺寸，总共64个像素。这一步的作用是去除图片的细节，只保留结构、明暗等基本信息，摒弃不同尺寸、比例带来的图片差异。</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><img src="http://image.beekka.com/blog/201107/bg2011072107.png" alt="" /></td>
+      <td><img src="http://image.beekka.com/blog/201107/bg2011072107.png" alt="" height="64px" width="64px" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>第二步，简化色彩。</strong></p>
+
+<p>将缩小后的图片，转为64级灰度。也就是说，所有像素点总共只有64种颜色。</p>
+
+<p><strong>第三步，计算平均值。</strong></p>
+
+<p>计算所有64个像素的灰度平均值。</p>
+
+<p><strong>第四步，比较像素的灰度。</strong></p>
+
+<p>将每个像素的灰度，与平均值进行比较。大于或等于平均值，记为1；小于平均值，记为0。</p>
+
+<p><strong>第五步，计算哈希值。</strong></p>
+
+<p>将上一步的比较结果，组合在一起，就构成了一个64位的整数，这就是这张图片的指纹。组合的次序并不重要，只要保证所有图片都采用同样次序就行了。</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><img src="http://image.beekka.com/blog/201107/bg2011072109.png" alt="" /></td>
+      <td>=</td>
+      <td><img src="http://image.beekka.com/blog/201107/bg2011072109.png" alt="" height="64px" width="64px" /></td>
+      <td>= 8f373714acfcf4d0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>得到指纹以后，就可以对比不同的图片，看看64位中有多少位是不一样的。在理论上，这等同于计算<a href="http://zh.wikipedia.org/wiki/汉明距离">“汉明距离”</a>（Hamming distance）。如果不相同的数据位不超过5，就说明两张图片很相似；如果大于10，就说明这是两张不同的图片。</p>
+
+<p>具体的代码实现，可以参见<a href="http://www.reddit.com/r/programming/comments/hql8b/looks_like_it_for_the_last_few_months_i_have_had/c1xkcdd">Wote</a>用python语言写的<a href="http://www.ruanyifeng.com/blog/2011/07/imgHash.txt">imgHash.py</a>。代码很短，只有53行。使用的时候，第一个参数是基准图片，第二个参数是用来比较的其他图片所在的目录，返回结果是两张图片之间不相同的数据位数量（汉明距离）。</p>
+
+<p>这种算法的优点是简单快速，不受图片大小缩放的影响，缺点是图片的内容不能变更。如果在图片上加几个文字，它就认不出来了。所以，它的最佳用途是根据缩略图，找出原图。</p>
+
+<p>实际应用中，往往采用更强大的<a href="http://www.phash.org/">pHash</a>算法和<a href="http://en.wikipedia.org/wiki/Scale-invariant_feature_transform">SIFT</a>算法，它们能够识别图片的变形。只要变形程度不超过25%，它们就能匹配原图。这些算法虽然更复杂，但是原理与上面的简便算法是一样的，就是先将图片转化成Hash字符串，然后再进行比较。</p>
+
+<p>在<a href="http://www.isnowfy.com/similar-image-search/">isnowfy</a>的网站看到，还有其他两种方法也很简单，这里做一些笔记。</p>
+
+<p><img src="http://image.beekka.com/blog/201303/bg2013033102.jpg" alt="" /></p>
+
+<p><strong>一、颜色分布法</strong></p>
+
+<p>每张图片都可以生成<a href="http://en.wikipedia.org/wiki/Color_histogram">颜色分布的直方图</a>（color histogram）。如果两张图片的直方图很接近，就可以认为它们很相似。</p>
+
+<p><img src="http://image.beekka.com/blog/201303/bg2013033103.jpg" alt="" /></p>
+
+<p>任何一种颜色都是由红绿蓝三原色（RGB）构成的，所以上图共有4张直方图（三原色直方图 + 最后合成的直方图）。</p>
+
+<p>如果每种原色都可以取256个值，那么整个颜色空间共有1600万种颜色（256的三次方）。针对这1600万种颜色比较直方图，计算量实在太大了，因此需要采用简化方法。可以将0～255分成四个区：0～63为第0区，64～127为第1区，128～191为第2区，192～255为第3区。这意味着红绿蓝分别有4个区，总共可以构成64种组合（4的3次方）。</p>
+
+<p>任何一种颜色必然属于这64种组合中的一种，这样就可以统计每一种组合包含的像素数量。</p>
+
+<p><img src="http://image.beekka.com/blog/201303/bg2013033105.png" alt="" /></p>
+
+<p>上图是某张图片的颜色分布表，将表中最后一栏提取出来，组成一个64维向量(7414, 230, 0, 0, 8, …, 109, 0, 0, 3415, 53929)。这个向量就是这张图片的特征值或者叫”指纹”。</p>
+
+<p>于是，寻找相似图片就变成了找出与其最相似的向量。这可以用<a href="http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient">皮尔逊相关系数</a>或者<a href="http://www.ruanyifeng.com/blog/2013/03/cosine_similarity.html">余弦相似度</a>算出。</p>
+
+<p><strong>二、内容特征法</strong></p>
+
+<p>除了颜色构成，还可以从比较图片内容的相似性入手。</p>
+
+<p>首先，将原图转成一张较小的灰度图片，假定为50×50像素。然后，确定一个阈值，将灰度图片转成黑白图片。</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><img src="http://image.beekka.com/blog/201303/bg2013033106.jpg" alt="" style="padding-right:20px" /></td>
+      <td><img src="http://image.beekka.com/blog/201303/bg2013033108.jpg" alt="" style="padding-right:20px" /></td>
+      <td><img src="http://image.beekka.com/blog/201303/bg2013033107.png" alt="" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>如果两张图片很相似，它们的黑白轮廓应该是相近的。于是，问题就变成了，第一步如何确定一个合理的阈值，正确呈现照片中的轮廓？</p>
+
+<p>显然，前景色与背景色反差越大，轮廓就越明显。这意味着，如果我们找到一个值，可以使得前景色和背景色各自的”类内差异最小”（minimizing the intra-class variance），或者”类间差异最大”（maximizing the inter-class variance），那么这个值就是理想的阈值。</p>
+
+<p>1979年，日本学者大津展之证明了，”类内差异最小”与”类间差异最大”是同一件事，即对应同一个阈值。他提出一种简单的算法，可以求出这个阈值，这被称为<a href="http://en.wikipedia.org/wiki/Otsu">“大津法”</a>（Otsu’s method）。下面就是他的计算方法。</p>
+
+<p>假定一张图片共有n个像素，其中灰度值小于阈值的像素为 n1 个，大于等于阈值的像素为 n2 个（ n1 + n2 = n ）。w1 和 w2 表示这两种像素各自的比重。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>w1 = n1 / n
+
+w2 = n2 / n
+</code></pre>
+</div>
+
+<p>再假定，所有灰度值小于阈值的像素的平均值和方差分别为 μ1 和 σ1，所有灰度值大于等于阈值的像素的平均值和方差分别为 μ2 和 σ2。于是，可以得到</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>类内差异 = w1(σ1的平方) + w2(σ2的平方)
+
+类间差异 = w1w2(μ1-μ2)^2
+</code></pre>
+</div>
+
+<p>可以证明，这两个式子是等价的：得到”类内差异”的最小值，等同于得到”类间差异”的最大值。不过，从计算难度看，后者的计算要容易一些。</p>
+
+<p>下一步用”穷举法”，将阈值从灰度的最低值到最高值，依次取一遍，分别代入上面的算式。使得”类内差异最小”或”类间差异最大”的那个值，就是最终的阈值。具体的实例和Java算法，请看<a href="http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html">这里</a>。</p>
+
+<p><img src="http://image.beekka.com/blog/201303/bg2013033109.png" alt="" /></p>
+
+<p>有了50×50像素的黑白缩略图，就等于有了一个50×50的0-1矩阵。矩阵的每个值对应原图的一个像素，0表示黑色，1表示白色。这个矩阵就是一张图片的特征矩阵。</p>
+
+<p>两个特征矩阵的不同之处越少，就代表两张图片越相似。这可以用”异或运算”实现（即两个值之中只有一个为1，则运算结果为1，否则运算结果为0）。对不同图片的特征矩阵进行”异或运算”，结果中的1越少，就是越相似的图片。</p>
+
+<h1 id="section">原文推荐</h1>
+
+<p>本文转载<a href="http://www.ruanyifeng.com/home.html">阮一峰</a>的文章:</p>
+
+<p><a href="http://www.ruanyifeng.com/blog/2011/07/principle_of_similar_image_search.html">相似图片搜索的原理</a></p>
+
+<p><a href="http://www.ruanyifeng.com/blog/2013/03/similar_image_search_part_ii.html">相似图片搜索的原理（二）</a></p>
+
+<p><a href="http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html">Looks Like It</a></p>
+
+<p><a href="http://www.isnowfy.com/similar-image-search/">关于相似图片搜索</a></p>
+
+</div>
+
+<div class="about">
+    <div class="about__devider">*****</div>
+    <div class="about__text">
+        Written by <strong>  Zhang Liwen </strong>
+        on <strong>25 March 2017</strong>
+    </div>
+</div>
+
+
+        </div>
+
+        <script src="/assets/vendor/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+    </body>
+</html>

@@ -73,13 +73,13 @@
 </h1>
 
 <div class="content">
-    <h2 id="section">背景</h2>
+    <h1 id="section">背景</h1>
 
 <p>服务器需要安装一个监控，用于监控每个服务的运行状况，内存、CPU、时间、交换空间等信息（可以自行配置）。经过Monit、god、eye之间，我选择了monit。其有点是占用内存小，而且基于unix与ruby无关。</p>
 
 <p>monit在设置邮箱信息之后，当服务运行数据超过设置的参数数据时，会自动发出邮件的警报信息。</p>
 
-<h2 id="installation">Installation</h2>
+<h1 id="installation">Installation</h1>
 
 <p>在官网https://mmonit.com/monit/下载Source code的tar.gz文件，解压后执行：</p>
 
@@ -90,7 +90,7 @@
 </code></pre>
 </div>
 
-<h2 id="setting">Setting</h2>
+<h1 id="setting">Setting</h1>
 <p>本人使用自动部署工具<a href="https://github.com/capistrano/capistrano">capistrano3</a>,这里介绍monit + capistrano3的配置：</p>
 
 <p>在config/deploy.rb文件中，添加：</p>
