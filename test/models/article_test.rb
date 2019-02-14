@@ -14,6 +14,7 @@ end
 #  comment_count :integer          default(0)
 #  content       :text
 #  like_count    :integer          default(0)
+#  secret_key    :string
 #  title         :string
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null

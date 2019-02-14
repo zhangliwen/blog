@@ -1,0 +1,31 @@
+<div class="note" >
+  <% if @article.blank? %>
+    <h6> 可能是因为您的链接地址有误、该文章已经被作者删除或转为私密状态。 </h6>
+  <% else %>
+  <div class="article">
+    <h1 class="title"><%= @article.title %> </h1>
+    <div class="author">
+      <div class="info">
+        <span class="name"><%= @article.user.name %></span>
+        <!-- 文章数据信息 -->
+        <div class="meta">
+          <!-- 如果文章更新时间大于发布时间，那么使用 tooltip 显示更新时间 -->
+          <span class="publish-time"><%= @article.created_at.to_s(:local) %></span>
+          <span class="wordage">字数 <%= @article.content.size %></span>
+          <span class="comments-count">评论 <%= @article.comment_count %></span>
+          <span class="likes-count">喜欢 <%= @article.like_count %></span>
+        </div>
+      </div>
+    </div>
+
+    <div data-note-content="" class="show-content">
+      <p>
+        <%= @article.content %>
+      </p>
+    </div>
+  </div>
+
+  <%= render "comment" %>
+
+  <% end %>
+</div>

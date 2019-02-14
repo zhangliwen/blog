@@ -1,0 +1,54 @@
+<div class="comment-list">
+  <% if current_user.nil? %>
+    <div>
+      <form class="new-comment">
+        <a class="avatar">
+          <img src="https://cdn2.jianshu.io/assets/default_avatar/avatar_default-78d4d1f68984cd6d4379508dd94b4210.png">
+        </a> 
+        <div class="sign-container">
+          <a href="sessions/sign_in" class="btn btn-sign">登录</a> 
+          <span>后发表评论</span>
+        </div>
+      </form> 
+      <!---->
+    </div>
+  <% else %>
+    <div>
+      <%= simple_form_for @comment, url: comments_path, method:'post', remote: true do |f| %>
+        <%= f.input :article_id, input_html: { value: @article.id}, as: :hidden %>
+        <%= f.input :user_id, input_html: { value: current_user.id}, as: :hidden %>
+        <%= f.input :content, placeholder: '写下你的评论...', as: :text, label: false %>
+        <%= f.button :submit, value: '发表', class: 'btn btn-lg btn-primary btn-block' %>
+      <% end %>
+
+    </div>
+  <% end %>
+  <div>
+    <div class="top-title">
+      <span><%= @article.comment_count %>条评论</span>
+      
+      <% @comments.each do |comment| %>
+        <div class="comment">
+          <div class="author">
+            <div class="info">
+              <h6><%= comment.user&.name %></h6>
+              <div class="meta">
+                <span> <%= comment.created_at.to_s(:local) %></span>
+              </div>
+            </div> 
+            
+          </div>
+
+          <div class="comment-wrap">
+            <p>
+              <%= comment.content %>
+            </p>
+          </div>
+
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+
+</div>

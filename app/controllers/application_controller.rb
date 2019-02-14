@@ -1,9 +1,16 @@
 class ApplicationController < ActionController::Base
   before_action :auto_sign_out
-  helper_method :current_user
+  helper_method :current_user, :logined?, :login_required
 
   def logined?
     current_user
+  end
+
+  def login_required
+    unless logined?
+      flash[:error] = '请先登陆系统！'
+      redirect_to "#{sign_in_sessions_path(redirect_to: request.url)}" and return
+    end
   end
 
   def current_user

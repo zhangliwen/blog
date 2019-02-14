@@ -9,6 +9,10 @@ class User < ApplicationRecord
     Digest::MD5.hexdigest(password_digest)
   end
 
+  def name
+    super || mobile
+  end
+
 end
 
 # == Schema Information

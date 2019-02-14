@@ -15,5 +15,6 @@
 //= require activestorage
 //= require turbolinks
 //= require boostrap.min
+//= require toastr
 //= require_tree .
 

@@ -1,0 +1,21 @@
+// Place all the styles related to the articles controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+.note {
+  position: relative;
+  padding: 20px 60px;
+}
+
+.show-content {
+  margin-top: 30px;
+}
+
+.comment-list {
+  padding-top: 20px;
+}
+
+#comment_content {
+  width: 100%;
+  height: 70px;
+}

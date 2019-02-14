@@ -1,6 +1,11 @@
 class Article < ApplicationRecord
   belongs_to :user
   has_many :comments
+  after_create :update_secret_key
+
+  def update_secret_key
+    update_columns(secret_key: Digest::MD5.hexdigest("#{self.id}-#{self.created_at.to_s}"))
+  end
 end
 
 # == Schema Information
