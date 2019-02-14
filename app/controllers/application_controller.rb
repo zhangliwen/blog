@@ -44,7 +44,7 @@ class ApplicationController < ActionController::Base
     if session[:last_visit_at] && session[:last_visit_at] < 2.hours.ago
       reset_session && cookies.delete(:user_id)
       flash[:error] = '已超时，请重新登陆系统！'
-      redirect_to "#{new_admin_session_path(redirect_to: request.url)}"
+      redirect_to "#{sign_in_sessions_path(redirect_to: request.url)}"
     end
   end
 

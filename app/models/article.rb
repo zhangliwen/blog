@@ -6,6 +6,10 @@ class Article < ApplicationRecord
   def update_secret_key
     update_columns(secret_key: Digest::MD5.hexdigest("#{self.id}-#{self.created_at.to_s}"))
   end
+
+  def content_format
+    ActionView::Base.full_sanitizer.sanitize(content)
+  end
 end
 
 # == Schema Information
