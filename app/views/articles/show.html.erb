@@ -10,8 +10,8 @@
         <!-- 文章数据信息 -->
         <div class="meta">
           <!-- 如果文章更新时间大于发布时间，那么使用 tooltip 显示更新时间 -->
-          <span class="publish-time"><%= @article.created_at.to_s(:local) %></span>
-          <span class="wordage">字数 <%= @article.content.size %></span>
+          <span class="publish-time"><%= @article.created_at.to_s(:db) %></span>
+          <span class="wordage">字数 <%= @article.content_format.size %></span>
           <span class="comments-count">评论 <%= @article.comment_count %></span>
           <span class="likes-count">喜欢 <%= @article.like_count %></span>
         </div>

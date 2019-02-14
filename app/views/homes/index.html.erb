@@ -1,6 +1,6 @@
 <ul class="article-list list-group-flush">
   <% @articles.each do |article|%>
-    <li class="list-group-item" article-id="<%= article.id %>">
+    <li class="article-item" article-id="<%= article.id %>">
       <div class="content">
         <a class="title" target="_blank" href=" <%= "/articles/#{ article.secret_key}"%>"><%= article.title %></a>
         <p class="abstract">

@@ -1,6 +1,12 @@
 class Comment < ApplicationRecord
   belongs_to :article
   belongs_to :user
+  after_create :update_article_comment_count
+
+  def update_article_comment_count
+    article.update_columns(comment_count: article.comment_count + 1)
+  end
+
 end
 
 # == Schema Information

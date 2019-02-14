@@ -23,31 +23,38 @@
 
     </div>
   <% end %>
-  <div>
+  <div class="featured-comment-list">
     <div class="top-title">
       <span><%= @article.comment_count %>条评论</span>
-      
-      <% @comments.each do |comment| %>
-        <div class="comment">
-          <div class="author">
-            <div class="info">
-              <h6><%= comment.user&.name %></h6>
-              <div class="meta">
-                <span> <%= comment.created_at.to_s(:local) %></span>
-              </div>
-            </div> 
-            
-          </div>
-
-          <div class="comment-wrap">
-            <p>
-              <%= comment.content %>
-            </p>
-          </div>
-
-        </div>
-      <% end %>
     </div>
+      
+    <% @comments.each do |comment| %>
+      <div class="comment">
+        <div class="author">
+          <div class="v-tooltip-container" style="z-index: 0;">
+            <div class="v-tooltip-content">
+              <div class="avatar">
+                <img src="https://cdn2.jianshu.io/assets/default_avatar/avatar_default-78d4d1f68984cd6d4379508dd94b4210.png">
+              </div>  
+            </div> 
+          </div>
+          <div class="info">
+            <div class="name"><%= comment.user&.name %></div>
+            <div class="meta">
+              <span> <%= comment.created_at.to_s(:db) %></span>
+            </div>
+          </div> 
+          
+        </div>
+
+        <div class="comment-wrap">
+          <p>
+            <%= comment.content %>
+          </p>
+        </div>
+
+      </div>
+    <% end %>
   </div>
 
 
