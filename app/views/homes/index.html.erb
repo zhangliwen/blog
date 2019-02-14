@@ -1,0 +1,13 @@
+<ul class="article-list list-group-flush">
+  <% @articles.each do |article|%>
+    <li class="list-group-item" article-id="<%= article.id %>">
+      <div class="content">
+        <a class="title" target="_blank" href="/p/86e72d99dd5f"><%= article.title %></a>
+        <p class="abstract">
+          <%= article.content.size > 72 ? "#{article.content[0..72]}.." : article.content %>
+        </p>
+      <div class="meta">
+      </div>
+    </li>
+  <% end %>
+</ul>

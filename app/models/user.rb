@@ -1,8 +1,14 @@
 class User < ApplicationRecord
+  include UserSecure
   has_many :login_logs
   has_many :articles
   has_many :comments
   has_many :article_likes
+
+  def sign
+    Digest::MD5.hexdigest(password_digest)
+  end
+
 end
 
 # == Schema Information

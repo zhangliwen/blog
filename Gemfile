@@ -64,3 +64,8 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # Simple Rails app configuration
 gem 'figaro'
+
+# paginator for Ruby webapps
+gem 'kaminari'
+
+gem 'simple_form'
