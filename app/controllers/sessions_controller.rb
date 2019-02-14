@@ -2,7 +2,13 @@ class SessionsController < ApplicationController
   layout false
   skip_before_action :auto_sign_out
 
+  # 注册
   def new
+    @user = User.new
+  end
+
+  # 登录
+  def sign_in
     @user = User.new
   end
 
@@ -12,9 +18,9 @@ class SessionsController < ApplicationController
       redirect_to new_session_path
     else
       @user = User.create(user_params)
-      sign_in @user
+      user_sign_in @user
       flash[:info] = '成功登录系统！'
-      redirect_to (params[:redirect_to].blank? ? homes_path : params[:redirect_to])
+      redirect_to (params[:redirect_to].blank? ? root_path : params[:redirect_to])
     end
   end
 
@@ -22,7 +28,7 @@ class SessionsController < ApplicationController
   def login
     @user = User.find_by(mobile: params[:user][:mobile]).try(:authenticate, params[:user][:password])
     if @user
-      sign_in @user
+      user_sign_in @user
       set_remember_password
       flash[:info] = '成功登录系统！'
       redirect_to (params[:redirect_to].blank? ? root_path : params[:redirect_to])
@@ -35,7 +41,7 @@ class SessionsController < ApplicationController
   def destroy
     sign_out
     flash[:info] = '成功登出系统！'
-    redirect_to new_session_path
+    redirect_to root_path
   end
 
   def set_remember_password
@@ -48,6 +54,12 @@ class SessionsController < ApplicationController
       cookies.delete :login_mobile
       cookies.delete :login_password
     end
+  end
+
+  private
+
+  def user_params
+    params.require(:user).permit(:name, :mobile, :password)
   end
 
 end

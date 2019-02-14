@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   resources :sessions, only: [:new, :create, :destroy] do
     collection do
       post :login
+      get :sign_in
     end
   end
 

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>部落格</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body>
+    <%= simple_form_for @user, url: login_sessions_path, method:'post' do |f| %>
+      <%= f.input :mobile, input_html: { class: 'form-control', value: "#{cookies.signed[:login_mobile]}" } %>
+      <%= f.input :password, input_html: { class: 'form-control', value: "#{cookies.signed[:login_password]}" } %>
+
+      <% if cookies[:remember_password].present? %>
+        <div class="checked checkbox">
+          <label>
+            <input type="checkbox" checked="" name="remember_password"> 记住密码
+          </label>
+        </div>
+      <% else %>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="remember_password"> 记住密码
+          </label>
+        </div>
+      <% end %>
+
+      <%= f.button :submit, value: '登录', class: 'btn btn-lg btn-primary btn-block' %>
+    <% end %>
+
+  </body>
+</html>
+

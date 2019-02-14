@@ -24,11 +24,16 @@
                   <li><a href="#"></a>我的主页</li>
                   <li><a href="#">设置</a></li>
                   <li><a href="#">登录记录</a></li>
+                  <li>
+                    <a data-confirm="确定退出登录?" data-method="delete" href="/sessions/destroy">退出</a>
+                  </li>
+
                 </ul>
               </li>
+              <li><a href="#">写文章</a></li>
             <% else %>
-              <li><a href=<%= new_session_path%> >登录</a></li>
-              <li><a href="../navbar-static-top/">注册</a></li>
+              <li><a href=<%= sign_in_sessions_path%> >登录</a></li>
+              <li><a href=<%= new_session_path%> >注册</a></li>
             <% end %>
 
           </ul>
