@@ -1,24 +1,19 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## infomation
 
-Things you may want to cover:
+* Ruby version: 2.4.1
+* database: postgresql
 
-* Ruby version
+## install
+* Install dependence: bundle install
 
-* System dependencies
+* Copy config file: copy config/application.yml.example to config/application.yml
 
-* Configuration
+* Modify config/application.yml 
 
-* Database creation
+* Database creation: rails db:create
 
-* Database initialization
+* Database initialization: rails db:migrate
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+* Start service: rails s 
