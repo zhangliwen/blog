@@ -15,7 +15,7 @@ class ArticlesController < ApplicationController
   def create 
     @article = Article.new(article_params)
     if @article.save
-      render js: "toastr.success('发表成功！'); window.location.href=articles/#{@article.secret_key};"
+      render js: "toastr.success('发表成功！'); window.location.href='/articles/#{@article.secret_key}';"
     else
       render js: "toastr.error('发表失败！')"
     end

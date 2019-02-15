@@ -1,13 +1,31 @@
 <ul class="article-list list-group-flush">
   <% @articles.each do |article|%>
     <li class="article-item" article-id="<%= article.id %>">
+      
+      <% if article.picture_url.present? %>
+        <a class="wrap-img" href="<%= "/articles/#{ article.secret_key}"%>" target="_blank">
+          <img class="  img-blur-done" src=" <%= article.picture_url %>?imageMogr2/auto-orient/strip|imageView2/1/w/360/h/240" alt="120">
+        </a>
+      <% end %>
+
       <div class="content">
         <a class="title" target="_blank" href=" <%= "/articles/#{ article.secret_key}"%>"><%= article.title %></a>
         <p class="abstract">
-          <%= article.content_format.size > 72 ? "#{article.content_format[0..72]}.." : article.content_format %>
+          <%= article.content_format.size > 150 ? "#{article.content_format[0..150]}.." : article.content_format %>
         </p>
-      <div class="meta">
-      </div>
+
+    <div class="meta">
+      <span class="glyphicon glyphicon-user" aria-hidden="true">
+        <%= article.user&.name %>
+      </span>
+      <span class="glyphicon glyphicon-list-alt" aria-hidden="true">
+        <%= article.comment_count %> 
+      </span>
+      <span class="glyphicon glyphicon-heart" aria-hidden="true">
+        <%= article.like_count %>
+      </span>
+    </div>
+
     </li>
   <% end %>
 </ul>

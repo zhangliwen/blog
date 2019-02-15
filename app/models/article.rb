@@ -10,6 +10,11 @@ class Article < ApplicationRecord
   def content_format
     ActionView::Base.full_sanitizer.sanitize(content)
   end
+
+  def picture_url
+    c = content.match(/\/\/[^\s]*(jpg|gif|png)/)
+    c.present? ? c.to_s : nil
+  end
 end
 
 # == Schema Information
