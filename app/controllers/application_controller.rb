@@ -28,11 +28,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def user_sign_in(user)
+  def user_sign_in(user, ip = nil)
     if user.present?
       reset_session && cookies.delete(:user_id)
       session[:user_id] = user.id
       session[:sign] = user.sign
+
+      user.login_logs.create(ip: ip)
     end
   end
 

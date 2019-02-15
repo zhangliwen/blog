@@ -18,7 +18,7 @@ class SessionsController < ApplicationController
       redirect_to new_session_path
     else
       @user = User.create(user_params)
-      user_sign_in @user
+      user_sign_in @user, request.remote_ip
       flash[:info] = '成功登录系统！'
       redirect_to (params[:redirect_to].blank? ? root_path : params[:redirect_to])
     end
@@ -28,7 +28,7 @@ class SessionsController < ApplicationController
   def login
     @user = User.find_by(mobile: params[:user][:mobile]).try(:authenticate, params[:user][:password])
     if @user
-      user_sign_in @user
+      user_sign_in @user, request.remote_ip
       set_remember_password
       flash[:info] = '成功登录系统！'
       redirect_to (params[:redirect_to].blank? ? root_path : params[:redirect_to])
