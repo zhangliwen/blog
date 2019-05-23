@@ -3,7 +3,7 @@
 ## infomation
 
 * Ruby version: 2.4.1
-* database: postgresql
+* database: postgresql or mysql
 
 ## install
 * Install dependence: bundle install
@@ -17,3 +17,4 @@
 * Database initialization: rails db:migrate
 
 * Start service: rails s 
+
