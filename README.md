@@ -18,3 +18,4 @@
 
 * Start service: rails s 
 
+* use http://61.160.47.6:4000
