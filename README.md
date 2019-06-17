@@ -19,3 +19,5 @@
 * Start service: rails s 
 
 * use http://61.160.47.6:4000
+
+* use http://mygitee.com/liwen1/next_gitos
