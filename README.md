@@ -14,3 +14,5 @@
     * [在七牛服务器上压缩文件](http://zhangliwen.site/rails/2016/08/27/qiniu_online_zip.html)
     * [Rails升级到4.2(译文)](http://zhangliwen.site/rails/2016/09/13/how_to_upgrade_to_rails_4_2.html)
     * [Rails瘦身](http://zhangliwen.site/rails/2016/10/13/rails_on_a_diet.html)
+
+# test
